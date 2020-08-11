@@ -18,6 +18,8 @@ public:
 		NUM_SECTORS * 18 + //Top and bottom triangles
 		NUM_SECTORS * (NUM_STACKS - 2) * 18; //Middle quadrilaterals
 
+	static const float DEFAULT_RADIUS;
+
 private:
 	std::vector<std::vector<Vec3>> points;
 

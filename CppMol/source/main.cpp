@@ -104,13 +104,23 @@ void displayGraphics() {
 			}
 			else if (commands[0].size() > 11 && commands[0].substr(0, 10) == "set radius") {
 				std::string radiusStr = commands[0].substr(11);
-				float radius;
-				try {
-					radius = std::stof(radiusStr);
-					Model::setSphereRadius(radius);
+				if (radiusStr == "default") {
+					Model::setSphereRadius(SphereTemplate::DEFAULT_RADIUS);
 				}
-				catch (std::invalid_argument) {
-					std::cerr << "ERROR > Invalid radius\n\n";
+				else {
+					try {
+						int radius = std::stoi(radiusStr);
+						if (radius > 100) {
+							radius = 100;
+						}
+						else if (radius < 0) {
+							radius = 0;
+						}
+						Model::setSphereRadius(radius / 1000.0f);
+					}
+					catch (std::invalid_argument) {
+						std::cerr << "ERROR > Invalid radius\n\n";
+					}
 				}
 			}
 			else {

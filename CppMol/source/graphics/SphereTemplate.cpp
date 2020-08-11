@@ -1,5 +1,7 @@
 #include "graphics/SphereTemplate.h"
 
+const float SphereTemplate::DEFAULT_RADIUS = 0.025f;
+
 void SphereTemplate::genPoints() {
 	//Multiply this by j to get sector angle
 	float sectorAngleIntermediate = 2 * MathUtils::PI / NUM_SECTORS;

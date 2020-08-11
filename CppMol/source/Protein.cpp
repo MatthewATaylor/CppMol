@@ -160,10 +160,10 @@ void Protein::genModel() {
 			return;
 		}
 
-		float radius = 0.035f;
-
 		Model::addSphere(
-			atoms[i].coords * coordScale - coordAverages, radius, r, g, b
+			atoms[i].coords * coordScale - coordAverages,
+			SphereTemplate::DEFAULT_RADIUS,
+			r, g, b
 		);
 	}
 

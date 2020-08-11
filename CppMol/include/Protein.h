@@ -12,7 +12,6 @@
 #include "Atom.h"
 #include "HTTPConnection.h"
 #include "graphics/SphereTemplate.h"
-#include "graphics/Sphere.h"
 #include "graphics/Model.h"
 
 class Protein {

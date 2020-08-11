@@ -166,6 +166,8 @@ void Protein::genModel() {
 			atoms[i].coords * coordScale - coordAverages, radius, r, g, b
 		);
 	}
+
+	Model::genBuffer(true);
 }
 
 void Protein::reset() {

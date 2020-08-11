@@ -19,7 +19,6 @@ private:
 	unsigned int viewLocation;
 	unsigned int modelLocation;
 	unsigned int normalLocation;
-	unsigned int colorLocation;
 	unsigned int cameraPosLocation;
 
 	static Shader *main;
@@ -41,7 +40,6 @@ public:
 	void setModelMatrix(const Mat4 &mat) const;
 	void setNormalMatrix(const Mat3 &mat) const;
 
-	void setColor(float r, float g, float b) const;
 	void setCameraPos(const Vec3 &position) const;
 
 	static void loadShaders();

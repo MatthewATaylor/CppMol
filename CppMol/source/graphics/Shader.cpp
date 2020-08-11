@@ -6,7 +6,6 @@ Shader::Shader(const std::string &vertexShaderSource, const std::string &fragmen
 	viewLocation = getUniformLocation("view");
 	modelLocation = getUniformLocation("model");
 	normalLocation = getUniformLocation("normalMat");
-	colorLocation = getUniformLocation("color");
 	cameraPosLocation = getUniformLocation("cameraPos");
 }
 
@@ -89,9 +88,6 @@ void Shader::setNormalMatrix(const Mat3 &mat) const {
 	glUniformMatrix3fv(normalLocation, 1, GL_FALSE, mat.getPtr());
 }
 
-void Shader::setColor(float r, float g, float b) const {
-	glUniform3f(colorLocation, r, g, b);
-}
 void Shader::setCameraPos(const Vec3 &position) const {
 	glUniform3f(cameraPosLocation, position.getX(), position.getY(), position.getZ());
 }
@@ -101,6 +97,9 @@ void Shader::loadShaders() {
 R"(#version 330 core
 
 layout(location = 0) in vec3 vertexPos;
+layout(location = 1) in vec3 sphereCenter;
+layout(location = 2) in float sphereRadius;
+layout(location = 3) in vec3 color;
 
 out vec3 fragmentPos;
 out vec3 fragmentNormal;
@@ -108,15 +107,14 @@ out vec3 fragmentColor;
 out vec3 viewPos;
 
 uniform mat4 model;
+uniform mat3 normalMat;
 uniform mat4 view;
 uniform mat4 projection;
-uniform mat3 normalMat;
 
-uniform vec3 color;
 uniform vec3 cameraPos;
 
 void main() {
-	vec4 worldPos = model * vec4(vertexPos, 1.0f);
+	vec4 worldPos = model * vec4(vertexPos * sphereRadius + sphereCenter, 1.0f);
 	gl_Position = projection * view * worldPos;
 
 	fragmentPos = vec3(worldPos);

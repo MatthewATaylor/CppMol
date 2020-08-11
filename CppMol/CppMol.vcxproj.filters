@@ -6,7 +6,6 @@
     <ClCompile Include="source\AminoAcid.cpp" />
     <ClCompile Include="source\Protein.cpp" />
     <ClCompile Include="source\math\MathUtils.cpp" />
-    <ClCompile Include="source\graphics\Sphere.cpp" />
     <ClCompile Include="source\graphics\Shader.cpp" />
     <ClCompile Include="source\graphics\Window.cpp" />
     <ClCompile Include="source\ResourceManager.cpp" />
@@ -26,7 +25,6 @@
     <ClInclude Include="include\math\Vec_3.h" />
     <ClInclude Include="include\math\Vec_4.h" />
     <ClInclude Include="include\math\MathUtils.h" />
-    <ClInclude Include="include\graphics\Sphere.h" />
     <ClInclude Include="include\graphics\Shader.h" />
     <ClInclude Include="include\graphics\Window.h" />
     <ClInclude Include="include\ResourceManager.h" />

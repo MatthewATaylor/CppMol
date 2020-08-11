@@ -14,7 +14,6 @@
 #include "graphics/Window.h"
 #include "graphics/Shader.h"
 #include "graphics/SphereTemplate.h"
-#include "graphics/Sphere.h"
 #include "graphics/Model.h"
 
 std::vector<std::string> commands;

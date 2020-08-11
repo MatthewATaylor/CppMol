@@ -24,7 +24,6 @@
     <ClCompile Include="source\Clock.cpp" />
     <ClCompile Include="source\graphics\Model.cpp" />
     <ClCompile Include="source\graphics\Shader.cpp" />
-    <ClCompile Include="source\graphics\Sphere.cpp" />
     <ClCompile Include="source\graphics\SphereTemplate.cpp" />
     <ClCompile Include="source\graphics\Window.cpp" />
     <ClCompile Include="source\HTTPConnection.cpp" />
@@ -41,7 +40,6 @@
     <ClInclude Include="include\Clock.h" />
     <ClInclude Include="include\graphics\Model.h" />
     <ClInclude Include="include\graphics\Shader.h" />
-    <ClInclude Include="include\graphics\Sphere.h" />
     <ClInclude Include="include\graphics\SphereTemplate.h" />
     <ClInclude Include="include\graphics\Window.h" />
     <ClInclude Include="include\HTTPConnection.h" />

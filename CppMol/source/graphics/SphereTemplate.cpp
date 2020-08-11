@@ -60,10 +60,10 @@ void SphereTemplate::genVertices() {
 }
 
 SphereTemplate::SphereTemplate() {
-	positions = new float[NUM_VERTICES];
 	genPoints();
 	genVertices();
 
+	/*
 	glGenVertexArrays(1, &vertexArrayID);
 	glGenBuffers(1, &vertexBufferID);
 
@@ -80,14 +80,15 @@ SphereTemplate::SphereTemplate() {
 	//Positions
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
+	*/
 }
 
+/*
 void SphereTemplate::bind() const {
 	glBindVertexArray(vertexArrayID);
 }
+*/
 
-SphereTemplate::~SphereTemplate() {
-	delete positions;
-	glDeleteBuffers(1, &vertexBufferID);
-	glDeleteVertexArrays(1, &vertexArrayID);
+const float *SphereTemplate::getVerticesPtr() const {
+	return positions;
 }

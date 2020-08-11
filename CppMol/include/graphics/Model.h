@@ -4,7 +4,6 @@
 
 #include <GL/glew.h>
 
-#include "Sphere.h"
 #include "SphereTemplate.h"
 #include "Shader.h"
 #include "Window.h"
@@ -15,13 +14,23 @@
 
 class Model {
 private:
-	static std::vector<Sphere*> spheres;
+	static unsigned int vertexArrayID;
+	static unsigned int vertexBufferID;
+	static bool vertexObjectsCreated;
+
 	static const SphereTemplate *sphereTemplate;
+
+	//Center (3) + radius (1) + color (3)
+	static std::vector<float> spheres;
+
+	static Mat4 modelMatrix;
 
 public:
 	static void reset();
 	static void setSphereTemplate(const SphereTemplate *sphereTemplate);
 	static void addSphere(const Vec3 &center, float radius, float r, float g, float b);
+
+	static void genBuffer(bool allocate);
 	static void render(const Shader *shader, const Window *window, const Camera *camera);
 
 	static void setSphereRadius(float radius);

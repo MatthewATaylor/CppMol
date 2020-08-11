@@ -62,32 +62,7 @@ void SphereTemplate::genVertices() {
 SphereTemplate::SphereTemplate() {
 	genPoints();
 	genVertices();
-
-	/*
-	glGenVertexArrays(1, &vertexArrayID);
-	glGenBuffers(1, &vertexBufferID);
-
-	glBindVertexArray(vertexArrayID);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-
-	glBufferData(
-		GL_ARRAY_BUFFER,
-		NUM_VERTICES * sizeof(float),
-		positions,
-		GL_STATIC_DRAW
-	);
-
-	//Positions
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-	*/
 }
-
-/*
-void SphereTemplate::bind() const {
-	glBindVertexArray(vertexArrayID);
-}
-*/
 
 const float *SphereTemplate::getVerticesPtr() const {
 	return positions;

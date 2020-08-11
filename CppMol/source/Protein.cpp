@@ -137,23 +137,23 @@ void Protein::genModel() {
 	for (size_t i = 0; i < atoms.size(); ++i) {
 		float r = 0.0f, g = 0.0f, b = 0.0f;
 		if (atoms[i].element == "C") {
-			r = 100.0f;
-			g = 100.0f;
-			b = 100.0f;
+			r = 0.39f;
+			g = 0.39f;
+			b = 0.39f;
 		}
 		else if (atoms[i].element == "N") {
-			b = 255.0f;
+			b = 1.0f;
 		}
 		else if (atoms[i].element == "O") {
-			r = 255.0f;
+			r = 1.0f;
 		}
 		else if (atoms[i].element == "S") {
-			r = 255.0f;
-			g = 255.0f;
+			r = 1.0f;
+			g = 1.0f;
 		}
 		else if (atoms[i].element == "P") {
-			r = 255.0f;
-			g = 127.5f;
+			r = 1.0f;
+			g = 0.5f;
 		}
 		else {
 			std::cerr << "ERROR > Unknown color for element: " << atoms[i].element << "\n\n";
@@ -167,7 +167,7 @@ void Protein::genModel() {
 		);
 	}
 
-	Model::genBuffer(true);
+	Model::genBuffers(false, true, true);
 }
 
 void Protein::reset() {

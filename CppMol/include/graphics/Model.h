@@ -16,6 +16,7 @@ class Model {
 private:
 	static unsigned int vertexArrayID;
 	static unsigned int vertexBufferID;
+	static unsigned int sphereBufferID;
 	static bool vertexObjectsCreated;
 
 	static const SphereTemplate *sphereTemplate;
@@ -25,12 +26,14 @@ private:
 
 	static Mat4 modelMatrix;
 
+	static void setSphereBufferAttributes();
+
 public:
 	static void reset();
 	static void setSphereTemplate(const SphereTemplate *sphereTemplate);
 	static void addSphere(const Vec3 &center, float radius, float r, float g, float b);
 
-	static void genBuffer(bool allocate);
+	static void genBuffers(bool setupSphereTemplateBuffer, bool allocateSphereBuffer, bool updateSphereBuffer);
 	static void render(const Shader *shader, const Window *window, const Camera *camera);
 
 	static void setSphereRadius(float radius);

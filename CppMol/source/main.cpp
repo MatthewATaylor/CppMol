@@ -35,6 +35,7 @@ void displayGraphics() {
 
 	SphereTemplate sphereTemplate;
 	Model::setSphereTemplate(&sphereTemplate);
+	Model::genBuffers(true, false, false);
 	Protein protein;
 
 	Camera camera(Vec3(0.0f, 0.0f, 10.0f), Shader::getMainShader());

@@ -1,15 +1,15 @@
 #include "graphics/Shader.h"
 
+Shader *Shader::sphere = nullptr;
+Shader *Shader::connector = nullptr;
+
 Shader::Shader(const std::string &vertexShaderSource, const std::string &fragmentShaderSource) {
 	readShaders(vertexShaderSource, fragmentShaderSource);
 	projectionLocation = getUniformLocation("projection");
 	viewLocation = getUniformLocation("view");
 	modelLocation = getUniformLocation("model");
 	normalLocation = getUniformLocation("normalMat");
-	cameraPosLocation = getUniformLocation("cameraPos");
 }
-
-Shader *Shader::main = nullptr;
 
 void Shader::checkShaderCompileErrors(unsigned int id, ShaderType shaderType) {
 	const int ERROR_BUFFER_SIZE = 512;
@@ -88,12 +88,16 @@ void Shader::setNormalMatrix(const Mat3 &mat) const {
 	glUniformMatrix3fv(normalLocation, 1, GL_FALSE, mat.getPtr());
 }
 
-void Shader::setCameraPos(const Vec3 &position) const {
-	glUniform3f(cameraPosLocation, position.getX(), position.getY(), position.getZ());
+void Shader::setVec3(
+	const std::string &uniformName, 
+	float value1, float value2, float value3
+) const {
+	unsigned int uniformLocation = getUniformLocation(uniformName);
+	glUniform3f(uniformLocation, value1, value2, value3);
 }
 
-void Shader::loadShaders() {
-	std::string vertexShader = 
+void Shader::loadDefaultShaders() {
+	std::string sphereVertexShader = 
 R"(#version 330 core
 
 layout(location = 0) in vec3 vertexPos;
@@ -104,14 +108,11 @@ layout(location = 3) in vec3 color;
 out vec3 fragmentPos;
 out vec3 fragmentNormal;
 out vec3 fragmentColor;
-out vec3 viewPos;
 
 uniform mat4 model;
 uniform mat3 normalMat;
 uniform mat4 view;
 uniform mat4 projection;
-
-uniform vec3 cameraPos;
 
 void main() {
 	vec4 worldPos = model * vec4(vertexPos * sphereRadius + sphereCenter, 1.0f);
@@ -120,16 +121,14 @@ void main() {
 	fragmentPos = vec3(worldPos);
 	fragmentNormal = normalMat * vertexPos;
 	fragmentColor = color;
-	viewPos = cameraPos;
 }
 )";
-	std::string fragmentShader = 
+	std::string sphereFragmentShader = 
 R"(#version 330 core
 
 in vec3 fragmentPos;
 in vec3 fragmentNormal;
 in vec3 fragmentColor;
-in vec3 viewPos;
 
 out vec4 finalFragmentColor;
 
@@ -146,22 +145,74 @@ void main() {
 	float diffuseStrength = max(dot(normal, lightDirection), 0.1f);
 	vec3 diffuse = 0.65f * diffuseStrength * lightColor;
 
-	//Specular
-	//vec3 viewDirection = normalize(viewPos - fragmentPos);
-	//vec3 reflectDirection = reflect(-lightDirection, normal);
-	//float specularStrength = pow(max(dot(viewDirection, reflectDirection), 0.0f), 32);
-	//vec3 specular = 0.5f * specularStrength * lightColor;
+	finalFragmentColor = vec4((ambient + diffuse) * fragmentColor, 1.0f);
+}
+)";
+	sphere = new Shader(sphereVertexShader, sphereFragmentShader);
+
+	std::string connectorVertexShader =
+R"(#version 330 core
+
+layout(location = 0) in vec3 vertexPos;
+layout(location = 1) in vec3 vertexNormal;
+
+out vec3 fragmentPos;
+out vec3 fragmentNormal;
+out vec3 fragmentColor;
+
+uniform mat4 model;
+uniform mat3 normalMat;
+uniform mat4 view;
+uniform mat4 projection;
+
+uniform vec3 color;
+
+void main() {
+	vec4 worldPos = model * vec4(vertexPos, 1.0f);
+	gl_Position = projection * view * worldPos;
+
+	fragmentPos = vec3(worldPos);
+	fragmentNormal = normalMat * vertexNormal;
+	fragmentColor = color;
+}
+)";
+	std::string connectorFragmentShader =
+R"(#version 330 core
+
+in vec3 fragmentPos;
+in vec3 fragmentNormal;
+in vec3 fragmentColor;
+
+out vec4 finalFragmentColor;
+
+void main() {
+	vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
+	vec3 lightDirection = vec3(0.0f, 0.0f, 1.0f);
+
+	//Ambient
+	float ambientStrength = 0.5f;
+	vec3 ambient = ambientStrength * lightColor;
+
+	//Diffuse
+	vec3 normal = normalize(fragmentNormal);
+	float diffuseStrength = max(dot(normal, lightDirection), 0.1f);
+	vec3 diffuse = 0.65f * diffuseStrength * lightColor;
 
 	finalFragmentColor = vec4((ambient + diffuse) * fragmentColor, 1.0f);
 }
 )";
-	main = new Shader(vertexShader, fragmentShader);
-	main->useProgram();
+	connector = new Shader(connectorVertexShader, connectorFragmentShader);
 }
-const Shader *Shader::getMainShader() {
-	return main;
+const Shader *Shader::getSphereDefault() {
+	return sphere;
+}
+const Shader *Shader::getConnectorDefault() {
+	return connector;
 }
 void Shader::freeResources() {
-	delete main;
-	main = nullptr;
+	delete sphere;
+	sphere = nullptr;
+
+	delete connector;
+	connector = nullptr;
 }

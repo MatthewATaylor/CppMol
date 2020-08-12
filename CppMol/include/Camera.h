@@ -8,7 +8,6 @@
 
 class Camera {
 private:
-	const Shader *shader = nullptr;
 	const Vec3 START_POS;
 	const float START_FOV = 45.0f;
 
@@ -16,7 +15,7 @@ private:
 	float fov = 45.0f;
 
 public:
-	Camera(const Vec3 &initialPosition, const Shader *shader);
+	Camera(const Vec3 &initialPosition);
 	void move(const Vec3 &values);
 	void zoom(float value);
 	void reset();

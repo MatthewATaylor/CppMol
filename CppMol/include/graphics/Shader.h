@@ -19,9 +19,9 @@ private:
 	unsigned int viewLocation;
 	unsigned int modelLocation;
 	unsigned int normalLocation;
-	unsigned int cameraPosLocation;
 
-	static Shader *main;
+	static Shader *sphere;
+	static Shader *connector;
 
 	void checkShaderCompileErrors(unsigned int id, ShaderType shaderType);
 	void checkShaderLinkErrors(unsigned int id);
@@ -40,10 +40,12 @@ public:
 	void setModelMatrix(const Mat4 &mat) const;
 	void setNormalMatrix(const Mat3 &mat) const;
 
-	void setCameraPos(const Vec3 &position) const;
+	void setVec3(const std::string &uniformName, float value1, float value2, float value3) const;
 
-	static void loadShaders();
+	static void loadDefaultShaders();
 
-	static const Shader *getMainShader();
+	static const Shader *getSphereDefault();
+	static const Shader *getConnectorDefault();
+
 	static void freeResources();
 };

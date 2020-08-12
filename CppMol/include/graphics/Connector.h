@@ -5,25 +5,29 @@
 #include <GL/glew.h>
 
 #include "ConnectorTemplate.h"
+#include "Shader.h"
 #include "math/Vec.h"
 #include "math/Mat.h"
 #include "math/MathUtils.h"
 
 class Connector {
 private:
-	ConnectorTemplate *connectorTemplate = nullptr;
-
 	float radius;
-	Vec3 color;
+	float r, g, b;
 
-	Mat4 modelMatrix;
+	Mat4 scaleMatrix;
+	Mat4 rotationMatrix;
+	Mat4 translationMatrix;
 
 public:
 	Connector(
-		ConnectorTemplate *connectorTemplate,
-		float radius, const Vec3 &color,
+		float radius, float r, float g, float b,
 		const Vec3 &point1, const Vec3 &point2
 	);
 
-	void render();
+	void render(
+		const Shader *shader,
+		const Mat4 &modelRotationMatrix,
+		const ConnectorTemplate *connectorTemplate
+	);
 };

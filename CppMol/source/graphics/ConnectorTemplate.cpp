@@ -80,11 +80,11 @@ void ConnectorTemplate::genHemisphereVertices() {
 	Vec3 point2;
 	Vec3 point3;
 
-	auto addTriangle = [&](int offsetDir) {
-		addVertexPoint(point1, point1 + normalOffset * offsetDir);
-		addVertexPoint(point2, point2 + normalOffset * offsetDir);
-		addVertexPoint(point3, point3 + normalOffset * offsetDir);
-	};
+	//auto addTriangle = [&](const int offsetDir) {
+	//	addVertexPoint(point1, point1 + normalOffset * offsetDir);
+	//	addVertexPoint(point2, point2 + normalOffset * offsetDir);
+	//	addVertexPoint(point3, point3 + normalOffset * offsetDir);
+	//};
 
 	for (unsigned int i = 0; i < NUM_STACKS; ++i) {
 		for (unsigned int j = 0; j < NUM_SECTORS; ++j) {
@@ -94,13 +94,17 @@ void ConnectorTemplate::genHemisphereVertices() {
 				point1 = topHemispherePoints[i][j]; //Top left
 				point2 = topHemispherePoints[i + 1][j]; //Bottom left
 				point3 = topHemispherePoints[i][j + 1]; //Top right
-				addTriangle(-1);
+				addVertexPoint(point1, point1 - normalOffset);
+				addVertexPoint(point2, point2 - normalOffset);
+				addVertexPoint(point3, point3 - normalOffset);
 
 				//Bottom hemisphere
 				point1 = bottomHemispherePoints[i][j]; //Bottom left
 				point2 = bottomHemispherePoints[i][j + 1]; //Bottom right
 				point3 = bottomHemispherePoints[i + 1][j]; //Top left
-				addTriangle(1);
+				addVertexPoint(point1, point1 + normalOffset);
+				addVertexPoint(point2, point2 + normalOffset);
+				addVertexPoint(point3, point3 + normalOffset);
 			}
 
 			//Triangles used in ends and full tiles
@@ -109,13 +113,17 @@ void ConnectorTemplate::genHemisphereVertices() {
 			point1 = topHemispherePoints[i][j + 1]; //Top right
 			point2 = topHemispherePoints[i + 1][j]; //Bottom left
 			point3 = topHemispherePoints[i + 1][j + 1]; //Bottom right
-			addTriangle(-1);
+			addVertexPoint(point1, point1 - normalOffset);
+			addVertexPoint(point2, point2 - normalOffset);
+			addVertexPoint(point3, point3 - normalOffset);
 
 			//Bottom hemisphere
 			point1 = bottomHemispherePoints[i][j + 1]; //Bottom right
 			point2 = bottomHemispherePoints[i + 1][j + 1]; //Top right
 			point3 = bottomHemispherePoints[i + 1][j]; //Top left
-			addTriangle(1);
+			addVertexPoint(point1, point1 + normalOffset);
+			addVertexPoint(point2, point2 + normalOffset);
+			addVertexPoint(point3, point3 + normalOffset);
 		}
 	}
 	topHemispherePoints.clear();
@@ -127,8 +135,32 @@ ConnectorTemplate::ConnectorTemplate() {
 
 	genHemispherePoints();
 	genHemisphereVertices();
+
+	glGenVertexArrays(1, &vertexArrayID);
+	glGenBuffers(1, &vertexBufferID);
+
+	glBindVertexArray(vertexArrayID);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+	glBufferData(GL_ARRAY_BUFFER, verticesIndex * sizeof(float), vertices, GL_STATIC_DRAW);
+
+	//Positions
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	//Normals
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
 }
 
 const float *ConnectorTemplate::getVerticesPtr() const {
 	return vertices;
+}
+
+size_t ConnectorTemplate::getVerticesLength() const {
+	return verticesIndex;
+}
+
+void ConnectorTemplate::bind() const {
+	glBindVertexArray(vertexArrayID);
 }

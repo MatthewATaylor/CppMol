@@ -1,14 +1,10 @@
 #include "Camera.h"
 
-Camera::Camera(const Vec3 &initialPosition, const Shader *shader) :
-	START_POS(initialPosition), position(initialPosition), shader(shader) {
-	
-	shader->setCameraPos(position);
-}
+Camera::Camera(const Vec3 &initialPosition) :
+	START_POS(initialPosition), position(initialPosition) {}
 
 void Camera::move(const Vec3 &values) {
 	position += values;
-	shader->setCameraPos(position);
 }
 void Camera::zoom(float value) {
 	fov -= value * 1.4f;
@@ -22,7 +18,6 @@ void Camera::zoom(float value) {
 void Camera::reset() {
 	position = START_POS;
 	fov = START_FOV;
-	shader->setCameraPos(position);
 }
 
 Mat4 Camera::getViewMatrix() const {

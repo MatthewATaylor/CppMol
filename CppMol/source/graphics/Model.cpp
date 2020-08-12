@@ -7,7 +7,13 @@ bool Model::vertexObjectsCreated = false;
 Mat4 Model::modelMatrix(MathUtils::MatGen::identity<float, 4>());
 
 std::vector<float> Model::spheres;
+std::vector<Connector*> Model::connectors;
+
 const SphereTemplate *Model::sphereTemplate = nullptr;
+const ConnectorTemplate *Model::connectorTemplate = nullptr;
+
+bool Model::drawSpheres = true;
+bool Model::drawConnectors = true;
 
 void Model::setSphereBufferAttributes() {
 	//Center
@@ -28,9 +34,16 @@ void Model::setSphereBufferAttributes() {
 
 void Model::reset() {
 	spheres.clear();
+	for (size_t i = 0; i < connectors.size(); ++i) {
+		delete connectors[i];
+	}
+	connectors.clear();
 }
 void Model::setSphereTemplate(const SphereTemplate *sphereTemplate) {
 	Model::sphereTemplate = sphereTemplate;
+}
+void Model::setConnectorTemplate(const ConnectorTemplate *connectorTemplate) {
+	Model::connectorTemplate = connectorTemplate;
 }
 void Model::addSphere(const Vec3 &center, float radius, float r, float g, float b) {
 	spheres.reserve(spheres.size() + 7);
@@ -42,8 +55,19 @@ void Model::addSphere(const Vec3 &center, float radius, float r, float g, float 
 	spheres.push_back(g);
 	spheres.push_back(b);
 }
+void Model::addConnector(
+	float radius,
+	float r, float g, float b,
+	const Vec3 &point1, const Vec3 &point2
+) {
+	connectors.push_back(new Connector(radius, r, g, b, point1, point2));
+}
 
-void Model::genBuffers(bool setupSphereTemplateBuffer, bool allocateSphereBuffer, bool updateSphereBuffer) {
+void Model::genSphereBuffers(
+	bool setupSphereTemplateBuffer,
+	bool allocateSphereBuffer,
+	bool updateSphereBuffer
+) {
 	if (!sphereTemplate) {
 		std::cerr << "ERROR > Sphere template not set\n\n";
 		return;
@@ -54,11 +78,10 @@ void Model::genBuffers(bool setupSphereTemplateBuffer, bool allocateSphereBuffer
 		glGenBuffers(1, &vertexBufferID);
 		glGenBuffers(1, &sphereBufferID);
 
-		//Only Model will do rendering, so just bind vertex array once
-		glBindVertexArray(vertexArrayID);
-
 		vertexObjectsCreated = true;
 	}
+
+	glBindVertexArray(vertexArrayID);
 
 	const size_t POSITIONS_SIZE = sizeof(float) * SphereTemplate::NUM_VERTICES;
 	const size_t SPHERES_SIZE = sizeof(float) * spheres.size();
@@ -93,30 +116,64 @@ void Model::genBuffers(bool setupSphereTemplateBuffer, bool allocateSphereBuffer
 		);
 	}
 }
-void Model::render(const Shader *shader, const Window *window, const Camera *camera) {
-	if (!shader) {
-		std::cerr << "ERROR > Unloaded shaders\n\n";
-		return;
+void Model::render(
+	const Shader *sphereShader,
+	const Shader *connectorShader,
+	const Window *window,
+	const Camera *camera
+) {
+	Mat4 viewMatrix = camera->getViewMatrix();
+	Mat4 projectionMatrix = camera->getProjectionMatrix(window);
+
+	if (drawSpheres) {
+		if (!sphereShader) {
+			std::cerr << "ERROR > Unloaded sphere shaders\n\n";
+			return;
+		}
+
+		glBindVertexArray(vertexArrayID);
+		sphereShader->useProgram();
+
+		sphereShader->setModelMatrix(modelMatrix);
+		sphereShader->setNormalMatrix(MathUtils::MatGen::normal<float>(modelMatrix));
+		sphereShader->setViewMatrix(viewMatrix);
+		sphereShader->setProjectionMatrix(projectionMatrix);
+
+		glDrawArraysInstanced(
+			GL_TRIANGLES,
+			0,
+			GLsizei(SphereTemplate::NUM_VERTICES / 3),
+			GLsizei(spheres.size() / 7)
+		);
 	}
+	if (drawConnectors) {
+		if (!connectorShader) {
+			std::cerr << "ERROR > Unloaded connector shaders\n\n";
+			return;
+		}
+		if (!connectorTemplate) {
+			std::cerr << "ERROR > Connector template not set\n\n";
+			return;
+		}
 
-	shader->setModelMatrix(modelMatrix);
-	shader->setNormalMatrix(MathUtils::MatGen::normal<float>(modelMatrix));
-	shader->setViewMatrix(camera->getViewMatrix());
-	shader->setProjectionMatrix(camera->getProjectionMatrix(window));
+		connectorTemplate->bind();
+		connectorShader->useProgram();
 
-	glDrawArraysInstanced(
-		GL_TRIANGLES, 
-		0, 
-		GLsizei(SphereTemplate::NUM_VERTICES / 3),
-		GLsizei(spheres.size() / 7)
-	);
+		connectorShader->setViewMatrix(viewMatrix);
+		connectorShader->setProjectionMatrix(projectionMatrix);
+
+		for(size_t i = 0; i < connectors.size(); ++i) {
+			//Set connector's model and normal matrices, set shader's color, draw arrays
+			connectors[i]->render(connectorShader, modelMatrix, connectorTemplate);
+		}
+	}
 }
 
 void Model::setSphereRadius(float radius) {
 	for (size_t i = 3; i < spheres.size(); i += 7) {
 		spheres[i] = radius;
 	}
-	genBuffers(false, false, true);
+	genSphereBuffers(false, false, true);
 }
 void Model::rotate(const Vec3 &angleRadians) {
 	modelMatrix = modelMatrix * MathUtils::MatGen::rotation<float>(angleRadians);

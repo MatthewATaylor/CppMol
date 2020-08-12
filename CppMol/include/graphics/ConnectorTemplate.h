@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include <GL/glew.h>
+
 #include "math/Vec.h"
 #include "math/MathUtils.h"
 
@@ -18,13 +20,19 @@ private:
 public:
 	//Size of position and normal arrays
 	static const unsigned int NUM_VERTICES =
-		NUM_SECTORS * 18 + //Top and bottom triangles (hemispheres)
-		NUM_SECTORS * (NUM_STACKS * 2 - 2) * 18 + //Middle quadrilaterals (hemispheres)
-		6 * NUM_PANELS; //Cylinder
+		NUM_SECTORS * 36 + //Top and bottom triangles (hemispheres)
+		NUM_SECTORS * (NUM_STACKS * 2 - 2) * 36 + //Middle quadrilaterals (hemispheres)
+		36 * NUM_PANELS; //Cylinder
+
+	//3 position vertices + 3 normal vertices
+	static const unsigned int VERTICES_PER_POINT = 6;
 
 	static const float DEFAULT_RADIUS;
 
 private:
+	unsigned int vertexArrayID;
+	unsigned int vertexBufferID;
+
 	std::vector<std::vector<Vec3>> topHemispherePoints;
 	std::vector<std::vector<Vec3>> bottomHemispherePoints;
 
@@ -49,4 +57,6 @@ private:
 public:
 	ConnectorTemplate();
 	const float *getVerticesPtr() const;
+	size_t getVerticesLength() const;
+	void bind() const;
 };

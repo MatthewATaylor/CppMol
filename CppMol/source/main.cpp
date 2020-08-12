@@ -14,6 +14,7 @@
 #include "graphics/Window.h"
 #include "graphics/Shader.h"
 #include "graphics/SphereTemplate.h"
+#include "graphics/ConnectorTemplate.h"
 #include "graphics/Model.h"
 
 std::vector<std::string> commands;
@@ -31,14 +32,27 @@ void displayGraphics() {
 		return;
 	}
 	ResourceManager::initOpenGL();
-	Shader::loadShaders();
+	Shader::loadDefaultShaders();
 
 	SphereTemplate sphereTemplate;
 	Model::setSphereTemplate(&sphereTemplate);
-	Model::genBuffers(true, false, false);
+
+	ConnectorTemplate connectorTemplate;
+	Model::setConnectorTemplate(&connectorTemplate);
+
+	Vec3 point1(-1.0f, -1.0f, 0.0f);
+	Vec3 point2(1.0f, 1.0f, 0.0f);
+
+	Model::addSphere(point1, 0.6f, 0.5f, 0.5f, 0.5f);
+	Model::addSphere(point2, 0.6f, 0.0f, 0.0f, 0.7f);
+	Model::addSphere(Vec3(0.0f, 0.0f, 0.0f), 0.4f, 1.0f, 1.0f, 1.0f);
+	Model::genSphereBuffers(true, true, true);
+
+	Model::addConnector(0.5f, 0.7f, 0.0f, 0.0f, point1, point2);
+
 	Protein protein;
 
-	Camera camera(Vec3(0.0f, 0.0f, 10.0f), Shader::getMainShader());
+	Camera camera(Vec3(0.0f, 0.0f, 10.0f));
 
 	double prevMouseX = 0.0;
 	double prevMouseY = 0.0;
@@ -130,7 +144,7 @@ void displayGraphics() {
 		}
 
 		Window::clear(0, 0, 0);
-		Model::render(Shader::getMainShader(), &window, &camera);
+		Model::render(Shader::getSphereDefault(), Shader::getConnectorDefault(), &window, &camera);
 		window.swapBuffers();
 	}
 

@@ -167,7 +167,7 @@ void Protein::genModel() {
 		);
 	}
 
-	Model::genBuffers(false, true, true);
+	Model::genSphereBuffers(false, true, true);
 }
 
 void Protein::reset() {

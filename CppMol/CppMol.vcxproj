@@ -22,6 +22,7 @@
     <ClCompile Include="source\AminoAcid.cpp" />
     <ClCompile Include="source\Camera.cpp" />
     <ClCompile Include="source\Clock.cpp" />
+    <ClCompile Include="source\graphics\ConnectorTemplate.cpp" />
     <ClCompile Include="source\graphics\Model.cpp" />
     <ClCompile Include="source\graphics\Shader.cpp" />
     <ClCompile Include="source\graphics\SphereTemplate.cpp" />
@@ -38,6 +39,7 @@
     <ClInclude Include="include\Atom.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\Clock.h" />
+    <ClInclude Include="include\graphics\ConnectorTemplate.h" />
     <ClInclude Include="include\graphics\Model.h" />
     <ClInclude Include="include\graphics\Shader.h" />
     <ClInclude Include="include\graphics\SphereTemplate.h" />

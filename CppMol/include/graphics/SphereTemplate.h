@@ -1,8 +1,6 @@
 #pragma once
 
-#include <memory>
 #include <vector>
-#include <iostream>
 
 #include "math/Vec.h"
 #include "math/MathUtils.h"

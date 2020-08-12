@@ -43,6 +43,9 @@ struct MathUtils {
 		static Mat<T, 4, 4> rotation(const Vec<T, 3> &rotationRadians);
 
 		template<typename T>
+		static Mat<T, 4, 4> rotationAboutAxis(const Vec<T, 3> &axis, T rotationRadians);
+
+		template<typename T>
 		static Mat<T, 4, 4> lookAt(
 			const Vec<T, 3> &cameraPosition, 
 			const Vec<T, 3> &cameraForward, 

@@ -81,7 +81,7 @@ void Protein::loadPDB(std::string url) {
 				}
 				else {
 					std::cout << "INFO > Adding amino acid \"" << abbr3 << "\" to dictionary. " <<
-						"Consider creating a dictionary entry yourself with AminoAcid::set.\n\n";
+						"Consider creating a dictionary entry yourself.\n\n";
 					const AminoAcid *newAminoAcid = AminoAcid::set("", "", abbr3, "", "");
 					if (newAminoAcid) {
 						sequence.push_back(newAminoAcid);
@@ -94,6 +94,19 @@ void Protein::loadPDB(std::string url) {
 			std::string name = fileLine.substr(12, 4);
 			removeSpaces(name);
 
+			char chain = fileLine[21];
+
+			std::string residueStr = fileLine.substr(22, 4);
+			int residueNum;
+			try {
+				residueNum = std::stoi(residueStr);
+			}
+			catch (std::invalid_argument) {
+				std::cerr << "ERROR > Invalid residue number: " << residueStr << ". " <<
+					"Skipping atom...\n\n";
+				continue;
+			}
+			
 			std::string xStr = fileLine.substr(30, 8);
 			std::string yStr = fileLine.substr(38, 8);
 			std::string zStr = fileLine.substr(46, 8);
@@ -107,7 +120,7 @@ void Protein::loadPDB(std::string url) {
 			std::string element = fileLine.substr(76, 2);
 			removeSpaces(element);
 
-			atoms.push_back({ name, coords, element });
+			atoms.push_back({ name, chain, residueNum, coords, element });
 		}
 	}
 }
@@ -133,6 +146,15 @@ void Protein::genModel() {
 	}
 	float coordScale = 8.0f / maxCoord;
 	Vec3 coordAverages = coordSums * coordScale / (float)atoms.size();
+
+	struct AlphaCarbonData {
+		char chain;
+		int residueNum;
+		Vec3 coords;
+	};
+
+	//Pair of alpha carbon chain identifier and coordinates
+	std::vector<AlphaCarbonData> alphaCarbonData;
 
 	for (size_t i = 0; i < atoms.size(); ++i) {
 		float r = 0.0f, g = 0.0f, b = 0.0f;
@@ -160,11 +182,33 @@ void Protein::genModel() {
 			return;
 		}
 
+		Vec3 coords = atoms[i].coords * coordScale - coordAverages;
+
+		if (atoms[i].name == "CA") {
+			alphaCarbonData.push_back({
+				atoms[i].chain, atoms[i].residueNum, coords
+			});
+		}
+
 		Model::addSphere(
-			atoms[i].coords * coordScale - coordAverages,
+			coords,
 			SphereTemplate::DEFAULT_RADIUS,
 			r, g, b
 		);
+	}
+
+	for (size_t i = 0; i < alphaCarbonData.size() - 1; ++i) {
+		//Same chain, no residues skipped
+		if (alphaCarbonData[i].chain == alphaCarbonData[i + 1].chain &&
+		    (alphaCarbonData[i].residueNum == alphaCarbonData[i + 1].residueNum || 
+			alphaCarbonData[i].residueNum + 1 == alphaCarbonData[i + 1].residueNum)) {
+
+			Model::addConnector(
+				ConnectorTemplate::DEFAULT_RADIUS,
+				0.39f, 0.39f, 0.39f,
+				alphaCarbonData[i].coords, alphaCarbonData[i + 1].coords
+			);
+		}
 	}
 
 	Model::genSphereBuffers(false, true, true);

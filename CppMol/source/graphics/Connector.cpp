@@ -18,36 +18,16 @@ Connector::Connector(
 		(point1.getZ() + point2.getZ()) / 2
 	);
 
-	//Either point can be used to calculate angles
-	Vec3 newPoint1 = point1 - midPoint;
-
-	/*
-	Vec3 angles(
-		std::atan2(newPoint1.getY(), newPoint1.getZ()),
-		std::atan2(newPoint1.getZ(), newPoint1.getX()),
-		std::atan2(newPoint1.getY(), newPoint1.getZ()) - MathUtils::PI / 2
-		//								 Template already rotated 90 degrees about Z axis
-	);
-	*/
-	/*
-	Vec3 angles(
-		std::atan2(newPoint1.getY(), newPoint1.getZ()) - MathUtils::PI / 2,
-		//								 Template already rotated 90 degrees about Z axis
-		std::atan2(newPoint1.getY(), newPoint1.getZ()),
-		std::atan2(newPoint1.getZ(), newPoint1.getX())
-	);
-	*/
-	Vec3 angles(
-		0.0f,
-		0.0f,
-		MathUtils::PI / 4
+	Vec3 defaultDirection(0.0f, 1.0f, 0.0f);
+	Vec3 pointDifference = point1 - point2;
+	Vec3 rotationAxis = defaultDirection.cross(pointDifference);
+	float rotationAngle = std::acos(
+		//-1 to +1: when +1 no rotation is needed
+		defaultDirection.dot(pointDifference) / pointDifference.mag()
 	);
 
-	std::cout << angles << "\n";
-	std::cout << length << "\n";
-
-	scaleMatrix = MathUtils::MatGen::scale<float, 4>(Vec3(radius, length / 2, radius));
-	rotationMatrix = MathUtils::MatGen::rotation<float>(angles);
+	scaleMatrix = MathUtils::MatGen::scale<float, 4>(Vec3(radius, length, radius));
+	rotationMatrix = MathUtils::MatGen::rotationAboutAxis<float>(rotationAxis, rotationAngle);
 	translationMatrix = MathUtils::MatGen::translation<float, 4>(midPoint);
 }
 

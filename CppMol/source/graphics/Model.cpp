@@ -61,6 +61,8 @@ void Model::addConnector(
 	const Vec3 &point1, const Vec3 &point2
 ) {
 	connectors.push_back(new Connector(radius, r, g, b, point1, point2));
+	addSphere(point1, radius, r, g, b);
+	addSphere(point2, radius, r, g, b);
 }
 
 void Model::genSphereBuffers(

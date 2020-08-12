@@ -105,6 +105,38 @@ Mat<T, 4, 4> MathUtils::MatGen::rotation(const Vec<T, 3> &rotationRadians) {
 }
 
 template<typename T>
+Mat<T, 4, 4> MathUtils::MatGen::rotationAboutAxis(const Vec<T, 3> &axis, T rotationRadians) {
+	Vec<T, 3> normalizedAxis = axis / axis.mag();
+
+	T sinTheta = std::sin(rotationRadians);
+	T cosTheta = std::cos(rotationRadians);
+
+	return Mat<T, 4, 4>(
+		{
+			{
+				normalizedAxis.getX() * normalizedAxis.getX() * (1 - cosTheta) + cosTheta,
+				normalizedAxis.getX() * normalizedAxis.getY() * (1 - cosTheta) + normalizedAxis.getZ() * sinTheta,
+				normalizedAxis.getX() * normalizedAxis.getZ() * (1 - cosTheta) - normalizedAxis.getY() * sinTheta,
+				0
+			},
+			{
+				normalizedAxis.getX() * normalizedAxis.getY() * (1 - cosTheta) - normalizedAxis.getZ() * sinTheta,
+				normalizedAxis.getY() * normalizedAxis.getY() * (1 - cosTheta) + cosTheta,
+				normalizedAxis.getY() * normalizedAxis.getZ() * (1 - cosTheta) + normalizedAxis.getX() * sinTheta,
+				0
+			},
+			{
+				normalizedAxis.getX() * normalizedAxis.getZ() * (1 - cosTheta) + normalizedAxis.getY() * sinTheta,
+				normalizedAxis.getY() * normalizedAxis.getZ() * (1 - cosTheta) - normalizedAxis.getX() * sinTheta,
+				normalizedAxis.getZ() * normalizedAxis.getZ() * (1 - cosTheta) + cosTheta,
+				0
+			},
+			{ 0, 0, 0, 1 }
+		}
+	);
+}
+
+template<typename T>
 Mat<T, 4, 4> MathUtils::MatGen::lookAt(
 	const Vec<T, 3> &cameraPosition, 
 	const Vec<T, 3> &cameraForward, 

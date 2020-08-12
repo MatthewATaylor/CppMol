@@ -34,24 +34,14 @@ void displayGraphics() {
 	ResourceManager::initOpenGL();
 	Shader::loadDefaultShaders();
 
+	//Prepare Model
 	SphereTemplate sphereTemplate;
 	Model::setSphereTemplate(&sphereTemplate);
-
 	ConnectorTemplate connectorTemplate;
 	Model::setConnectorTemplate(&connectorTemplate);
-
-	Vec3 point1(-1.0f, -1.0f, 0.0f);
-	Vec3 point2(1.0f, 1.0f, 0.0f);
-
-	Model::addSphere(point1, 0.6f, 0.5f, 0.5f, 0.5f);
-	Model::addSphere(point2, 0.6f, 0.0f, 0.0f, 0.7f);
-	Model::addSphere(Vec3(0.0f, 0.0f, 0.0f), 0.4f, 1.0f, 1.0f, 1.0f);
-	Model::genSphereBuffers(true, true, true);
-
-	Model::addConnector(0.5f, 0.7f, 0.0f, 0.0f, point1, point2);
+	Model::genSphereBuffers(true, false, false);
 
 	Protein protein;
-
 	Camera camera(Vec3(0.0f, 0.0f, 10.0f));
 
 	double prevMouseX = 0.0;

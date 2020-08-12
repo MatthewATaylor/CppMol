@@ -15,6 +15,7 @@
     <ClCompile Include="source\graphics\SphereTemplate.cpp" />
     <ClCompile Include="source\Camera.cpp" />
     <ClCompile Include="source\graphics\ConnectorTemplate.cpp" />
+    <ClCompile Include="source\graphics\Connector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\HTTPConnection.h" />
@@ -36,6 +37,7 @@
     <ClInclude Include="include\graphics\SphereTemplate.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\graphics\ConnectorTemplate.h" />
+    <ClInclude Include="include\graphics\Connector.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source\math\Mat.inl" />

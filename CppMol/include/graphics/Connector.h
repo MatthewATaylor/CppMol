@@ -15,6 +15,8 @@ private:
 	float radius;
 	float r, g, b;
 
+	float length;
+
 	Mat4 scaleMatrix;
 	Mat4 rotationMatrix;
 	Mat4 translationMatrix;
@@ -30,4 +32,6 @@ public:
 		const Mat4 &modelRotationMatrix,
 		const ConnectorTemplate *connectorTemplate
 	);
+
+	void setRadius(float radius);
 };

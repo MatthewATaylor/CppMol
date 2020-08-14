@@ -3,8 +3,6 @@
   <ItemGroup>
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\HTTPConnection.cpp" />
-    <ClCompile Include="source\AminoAcid.cpp" />
-    <ClCompile Include="source\Protein.cpp" />
     <ClCompile Include="source\math\MathUtils.cpp" />
     <ClCompile Include="source\graphics\Shader.cpp" />
     <ClCompile Include="source\graphics\Window.cpp" />
@@ -16,11 +14,12 @@
     <ClCompile Include="source\Camera.cpp" />
     <ClCompile Include="source\graphics\ConnectorTemplate.cpp" />
     <ClCompile Include="source\graphics\Connector.cpp" />
+    <ClCompile Include="source\bio\AminoAcid.cpp" />
+    <ClCompile Include="source\bio\PDBFile.cpp" />
+    <ClCompile Include="source\bio\Protein.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\HTTPConnection.h" />
-    <ClInclude Include="include\Protein.h" />
-    <ClInclude Include="include\AminoAcid.h" />
     <ClInclude Include="include\math\Mat.h" />
     <ClInclude Include="include\math\Vec.h" />
     <ClInclude Include="include\math\Vec_2.h" />
@@ -33,11 +32,17 @@
     <ClInclude Include="include\Input.h" />
     <ClInclude Include="include\graphics\Model.h" />
     <ClInclude Include="include\Clock.h" />
-    <ClInclude Include="include\Atom.h" />
     <ClInclude Include="include\graphics\SphereTemplate.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\graphics\ConnectorTemplate.h" />
     <ClInclude Include="include\graphics\Connector.h" />
+    <ClInclude Include="include\bio\AminoAcid.h" />
+    <ClInclude Include="include\bio\Atom.h" />
+    <ClInclude Include="include\bio\DisulfideBond.h" />
+    <ClInclude Include="include\bio\PDBFile.h" />
+    <ClInclude Include="include\bio\Helix.h" />
+    <ClInclude Include="include\bio\Protein.h" />
+    <ClInclude Include="include\bio\Sheet.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source\math\Mat.inl" />

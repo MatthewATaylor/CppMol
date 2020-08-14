@@ -4,10 +4,10 @@
 #include <thread>
 #include <stdexcept>
 
-#include "AminoAcid.h"
-#include "Protein.h"
 #include "ResourceManager.h"
 #include "Input.h"
+#include "bio/Protein.h"
+#include "bio/PDBFile.h"
 #include "math/Vec.h"
 #include "math/Mat.h"
 #include "math/MathUtils.h"
@@ -34,12 +34,17 @@ void displayGraphics() {
 	ResourceManager::initOpenGL();
 	Shader::loadDefaultShaders();
 
+	
 	//Prepare Model
 	SphereTemplate sphereTemplate;
 	Model::setSphereTemplate(&sphereTemplate);
+
 	ConnectorTemplate connectorTemplate;
 	Model::setConnectorTemplate(&connectorTemplate);
-	Model::genSphereBuffers(true, false, false);
+
+	Model::genBuffers();
+	Model::fillSphereTemplateBuffer();
+
 
 	Protein protein;
 	Camera camera(Vec3(0.0f, 0.0f, 10.0f));
@@ -49,6 +54,7 @@ void displayGraphics() {
 	bool prevMousePosSet = false;
 
 	while (!window.shouldClose() && !shouldExit) {
+		//Handle window input
 		Input::pollInput(&window);
 
 		if (Input::keyPressed(&window, Key::ESCAPE)) {
@@ -95,8 +101,9 @@ void displayGraphics() {
 		for (size_t i = 0; i < commands.size(); ++i) {
 			if (commands[0].size() > 5 && commands[0].substr(0, 4) == "load") {
 				std::string url = commands[0].substr(5);
-				protein.loadPDB(url);
-				protein.genModel();
+				PDBFile file(url);
+				protein = Protein(&file);
+				Model::loadPDB(&file);
 			}
 			else if (commands[0] == "reset") {
 				Model::reset();
@@ -106,10 +113,10 @@ void displayGraphics() {
 			else if (commands[0] == "print sequence") {
 				std::cout << protein << "\n\n";
 			}
-			else if (commands[0].size() > 11 && commands[0].substr(0, 10) == "set radius") {
-				std::string radiusStr = commands[0].substr(11);
+			else if (commands[0].size() > 5 && commands[0].substr(0, 4) == "atom") {
+				std::string radiusStr = commands[0].substr(5);
 				if (radiusStr == "default") {
-					Model::setSphereRadius(SphereTemplate::DEFAULT_RADIUS);
+					Model::setAtomRadius(SphereTemplate::DEFAULT_RADIUS);
 				}
 				else {
 					try {
@@ -120,10 +127,31 @@ void displayGraphics() {
 						else if (radius < 0) {
 							radius = 0;
 						}
-						Model::setSphereRadius(radius / 1000.0f);
+						Model::setAtomRadius(radius / 1000.0f);
 					}
 					catch (std::invalid_argument) {
-						std::cerr << "ERROR > Invalid radius\n\n";
+						std::cerr << "ERROR > Invalid size argument\n\n";
+					}
+				}
+			}
+			else if (commands[0].size() > 9 && commands[0].substr(0, 8) == "backbone") {
+				std::string radiusStr = commands[0].substr(9);
+				if (radiusStr == "default") {
+					Model::setConnectorRadius(ConnectorTemplate::DEFAULT_RADIUS);
+				}
+				else {
+					try {
+						int radius = std::stoi(radiusStr);
+						if (radius > 100) {
+							radius = 100;
+						}
+						else if (radius < 0) {
+							radius = 0;
+						}
+						Model::setConnectorRadius(radius / 1000.0f);
+					}
+					catch (std::invalid_argument) {
+						std::cerr << "ERROR > Invalid size argument\n\n";
 					}
 				}
 			}
@@ -133,6 +161,7 @@ void displayGraphics() {
 			commands.erase(commands.begin());
 		}
 
+		//Render model
 		Window::clear(0, 0, 0);
 		Model::render(Shader::getSphereDefault(), Shader::getConnectorDefault(), &window, &camera);
 		window.swapBuffers();

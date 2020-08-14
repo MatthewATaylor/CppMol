@@ -6,7 +6,7 @@ Connector::Connector(
 
 	radius(radius), r(r), g(g), b(b) {
 
-	float length = std::sqrt(
+	length = std::sqrt(
 		(point1.getX() - point2.getX()) * (point1.getX() - point2.getX()) +
 		(point1.getY() - point2.getY()) * (point1.getY() - point2.getY()) +
 		(point1.getZ() - point2.getZ()) * (point1.getZ() - point2.getZ())
@@ -50,4 +50,9 @@ void Connector::render(
 			connectorTemplate->getVerticesLength() / ConnectorTemplate::VERTICES_PER_POINT
 		)
 	);
+}
+
+void Connector::setRadius(float radius) {
+	this->radius = radius;
+	scaleMatrix = MathUtils::MatGen::scale<float, 4>(Vec3(radius, length, radius));
 }

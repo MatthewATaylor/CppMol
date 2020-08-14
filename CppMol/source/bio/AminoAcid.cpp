@@ -1,4 +1,4 @@
-#include "AminoAcid.h"
+#include "bio/AminoAcid.h"
 
 //These shared pointers won't ever reach a use count of 0
 std::shared_ptr<const AminoAcid> alanine       (new AminoAcid("ALANINE",       "A", "ALA", "C3H7NO2",    "000"));

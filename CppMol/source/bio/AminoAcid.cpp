@@ -81,7 +81,7 @@ const AminoAcid *AminoAcid::get(const std::string &name) {
 	try {
 		result = dict.at(name).get();
 	}
-	catch (std::out_of_range) {}
+	catch (...) {}
 	return result;
 }
 

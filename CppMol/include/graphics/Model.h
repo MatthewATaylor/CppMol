@@ -11,7 +11,8 @@
 #include "Camera.h"
 #include "Connector.h"
 #include "ConnectorTemplate.h"
-#include "bio/PDBFile.h"
+#include "Selection.h"
+#include "bio/MoleculeData.h"
 #include "math/Mat.h"
 #include "math/Vec.h"
 #include "math/MathUtils.h"
@@ -31,6 +32,8 @@ private:
 
 	static std::vector<Connector*> connectors;
 
+	static const MoleculeData *moleculeData;
+
 	//For model rotations
 	static Mat4 modelMatrix;
 
@@ -42,14 +45,17 @@ private:
 		std::vector<float> *vec
 	);
 
+	static bool selectionIsValid(const Selection *selection);
+
 public:
 	static void reset();
+	static void delMoleculeData();
 
 	static void setSphereTemplate(const SphereTemplate *sphereTemplate);
 	static void setConnectorTemplate(const ConnectorTemplate *connectorTemplate);
 
-	//Generate graphical model of PDB molecule
-	static void loadPDB(const PDBFile *pdbFile);
+	//Generate graphical model of molecule given set of data
+	static void loadMoleculeData(const MoleculeData *moleculeData);
 
 	static void addAtom(
 		const Vec3 &center,
@@ -77,21 +83,6 @@ public:
 	//Allocate and fill buffer for all sphere data
 	static void fillSphereBuffer();
 
-	/*
-	TODO:
-
-	Additional functions for modifying spheres and connectors (would call
-	syncSphereBuffer() following change)
-
-	Atom spheres:
-		change color for selection
-		change radius for selection
-
-	Connectors and connector spheres:
-		change color for selection
-		change radius for selection
-	*/
-
 	static void render(
 		const Shader *shader,
 		const Shader *connectorShader,
@@ -99,8 +90,8 @@ public:
 		const Camera *camera
 	);
 
-	static void setAtomRadius(float radius);
-	static void setConnectorRadius(float radius);
+	static void setAtomRadius(float radius, const Selection *selection);
+	//static void setConnectorRadius(float radius, const Selection *selection);
 
 	static void rotate(const Vec3 &angleRadians);
 };

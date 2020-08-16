@@ -7,7 +7,6 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
-#include <stdexcept>
 
 #include "AminoAcid.h"
 #include "Atom.h"

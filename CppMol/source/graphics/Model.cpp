@@ -12,6 +12,8 @@ std::vector<Connector*> Model::connectors;
 const SphereTemplate *Model::sphereTemplate = nullptr;
 const ConnectorTemplate *Model::connectorTemplate = nullptr;
 
+const MoleculeData *Model::moleculeData = nullptr;
+
 void Model::setSphereBufferAttributes() {
 	//Center
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)0);
@@ -44,6 +46,27 @@ void Model::addSphere(
 	vec->push_back(b);
 }
 
+bool Model::selectionIsValid(const Selection *selection) {
+	switch (selection->tag) {
+	case Selection::ALL:
+	case Selection::NONE:
+		break;
+	case Selection::RESIDUE:
+	case Selection::RESIDUE_RANGE:
+	case Selection::ELEMENT:
+	case Selection::CHAIN:
+		if (!moleculeData || moleculeData->atoms.size() == 0) {
+			std::cerr << "ERROR > No atoms found\n\n";
+			return false;
+		}
+		break;
+	default:
+		std::cerr << "ERROR > Invalid selection type\n\n";
+		return false;
+	}
+	return true;
+}
+
 void Model::reset() {
 	atomSpheres.clear();
 	connectorSpheres.clear();
@@ -51,6 +74,10 @@ void Model::reset() {
 		delete connectors[i];
 	}
 	connectors.clear();
+}
+void Model::delMoleculeData() {
+	delete moleculeData;
+	moleculeData = nullptr;
 }
 
 void Model::setSphereTemplate(const SphereTemplate *sphereTemplate) {
@@ -60,23 +87,23 @@ void Model::setConnectorTemplate(const ConnectorTemplate *connectorTemplate) {
 	Model::connectorTemplate = connectorTemplate;
 }
 
-void Model::loadPDB(const PDBFile *pdbFile) {
+void Model::loadMoleculeData(const MoleculeData *moleculeData) {
 	reset();
 
 	//Gather coordinate information to adjust model size and position
 	Vec3 coordSums;
 	float maxCoord = 0.0f;
-	for (size_t i = 0; i < pdbFile->atoms.size(); ++i) {
-		coordSums += pdbFile->atoms[i].coords;
+	for (size_t i = 0; i < moleculeData->atoms.size(); ++i) {
+		coordSums += moleculeData->atoms[i].coords;
 		for (unsigned int j = 0; j < 3; j++) {
-			float absCoord = std::abs(pdbFile->atoms[i].coords.get(j));
+			float absCoord = std::abs(moleculeData->atoms[i].coords.get(j));
 			if (absCoord > maxCoord) {
 				maxCoord = absCoord;
 			}
 		}
 	}
 	float coordScale = 8.0f / maxCoord;
-	Vec3 coordAverages = coordSums * coordScale / (float)pdbFile->atoms.size();
+	Vec3 coordAverages = coordSums * coordScale / (float)moleculeData->atoms.size();
 
 	struct AlphaCarbonData {
 		char chain;
@@ -85,39 +112,39 @@ void Model::loadPDB(const PDBFile *pdbFile) {
 	};
 	std::vector<AlphaCarbonData> alphaCarbonData;
 
-	for (size_t i = 0; i < pdbFile->atoms.size(); ++i) {
+	for (size_t i = 0; i < moleculeData->atoms.size(); ++i) {
 		float r = 0.0f, g = 0.0f, b = 0.0f;
-		if (pdbFile->atoms[i].element == "C") {
+		if (moleculeData->atoms[i].element == "C") {
 			r = 0.39f;
 			g = 0.39f;
 			b = 0.39f;
 		}
-		else if (pdbFile->atoms[i].element == "N") {
+		else if (moleculeData->atoms[i].element == "N") {
 			b = 1.0f;
 		}
-		else if (pdbFile->atoms[i].element == "O") {
+		else if (moleculeData->atoms[i].element == "O") {
 			r = 1.0f;
 		}
-		else if (pdbFile->atoms[i].element == "S") {
+		else if (moleculeData->atoms[i].element == "S") {
 			r = 1.0f;
 			g = 1.0f;
 		}
-		else if (pdbFile->atoms[i].element == "P") {
+		else if (moleculeData->atoms[i].element == "P") {
 			r = 1.0f;
 			g = 0.5f;
 		}
 		else {
 			std::cerr << "ERROR > Unknown color for element: " << 
-				pdbFile->atoms[i].element << "\n\n";
+				moleculeData->atoms[i].element << "\n\n";
 			return;
 		}
 
-		Vec3 coords = pdbFile->atoms[i].coords * coordScale - coordAverages;
+		Vec3 coords = moleculeData->atoms[i].coords * coordScale - coordAverages;
 
 		//Add to alpha carbon data for constructing backbone
-		if (pdbFile->atoms[i].name == "CA") {
+		if (moleculeData->atoms[i].name == "CA") {
 			alphaCarbonData.push_back({
-				pdbFile->atoms[i].chain, pdbFile->atoms[i].residueNum, coords
+				moleculeData->atoms[i].chain, moleculeData->atoms[i].residueNum, coords
 			});
 		}
 
@@ -144,6 +171,7 @@ void Model::loadPDB(const PDBFile *pdbFile) {
 	}
 
 	fillSphereBuffer();
+	Model::moleculeData = moleculeData;
 }
 
 void Model::addAtom(const Vec3 &center, float radius, float r, float g, float b) {
@@ -300,22 +328,67 @@ void Model::render(
 	}
 }
 
-void Model::setAtomRadius(float radius) {
+void Model::setAtomRadius(float radius, const Selection *selection) {
+	if (!selectionIsValid(selection)) {
+		return;
+	}
+	auto getAtomNum = [](size_t i) -> size_t {
+		return (i - 3) / 7;
+	};
 	for (size_t i = 3; i < atomSpheres.size(); i += 7) {
-		atomSpheres[i] = radius;
+		switch (selection->tag) {
+		case Selection::ALL:
+			atomSpheres[i] = radius;
+			break;
+		case Selection::NONE:
+			break;
+		case Selection::RESIDUE:
+			{
+				int residueNum = moleculeData->atoms[getAtomNum(i)].residueNum;
+				if (residueNum == selection->residue) {
+					atomSpheres[i] = radius;
+				}
+				break;
+			}
+		case Selection::RESIDUE_RANGE:
+			{
+				int residueNum = moleculeData->atoms[getAtomNum(i)].residueNum;
+				if (residueNum >= selection->residueRange.first &&
+					residueNum <= selection->residueRange.second) {
+
+					atomSpheres[i] = radius;
+				}
+				break;
+			}
+		case Selection::ELEMENT:
+			{
+				std::string element = moleculeData->atoms[getAtomNum(i)].element;
+				if (element == selection->element) {
+					atomSpheres[i] = radius;
+				}
+				break;
+			}
+		case Selection::CHAIN:
+			{
+				char chain = moleculeData->atoms[getAtomNum(i)].chain;
+				if (chain == selection->chain) {
+					atomSpheres[i] = radius;
+				}
+			}
+		}
 	}
 	syncSphereBuffer(true, false);
 }
-void Model::setConnectorRadius(float radius) {
-	for (size_t i = 3; i < connectorSpheres.size(); i += 7) {
-		connectorSpheres[i] = radius;
-	}
-	syncSphereBuffer(false, true);
-
-	for (size_t i = 0; i < connectors.size(); ++i) {
-		connectors[i]->setRadius(radius);
-	}
-}
+//void Model::setConnectorRadius(float radius) {
+//	for (size_t i = 3; i < connectorSpheres.size(); i += 7) {
+//		connectorSpheres[i] = radius;
+//	}
+//	syncSphereBuffer(false, true);
+//
+//	for (size_t i = 0; i < connectors.size(); ++i) {
+//		connectors[i]->setRadius(radius);
+//	}
+//}
 
 void Model::rotate(const Vec3 &angleRadians) {
 	modelMatrix = modelMatrix * MathUtils::MatGen::rotation<float>(angleRadians);

@@ -64,7 +64,7 @@ PDBFile::PDBFile(const std::string &url) {
 			try {
 				residueStart = std::stoi(residueStartStr);
 			}
-			catch (std::invalid_argument) {
+			catch (...) {
 				std::cerr << "ERROR > Invalid residue number: " << residueStartStr <<
 					". Skipping helix...\n\n";
 				continue;
@@ -75,7 +75,7 @@ PDBFile::PDBFile(const std::string &url) {
 			try {
 				residueEnd = std::stoi(residueEndStr);
 			}
-			catch (std::invalid_argument) {
+			catch (...) {
 				std::cerr << "ERROR > Invalid residue number: " << residueEndStr <<
 					". Skipping helix...\n\n";
 				continue;
@@ -88,7 +88,7 @@ PDBFile::PDBFile(const std::string &url) {
 			try {
 				type = std::stoi(typeStr);
 			}
-			catch (std::invalid_argument) {
+			catch (...) {
 				std::cerr << typeErrorMessage;
 				continue;
 			}
@@ -109,7 +109,7 @@ PDBFile::PDBFile(const std::string &url) {
 			try {
 				residueStart = std::stoi(residueStartStr);
 			}
-			catch (std::invalid_argument) {
+			catch (...) {
 				std::cerr << "ERROR > Invalid residue number: " << residueStartStr <<
 					". Skipping sheet...\n\n";
 				continue;
@@ -120,7 +120,7 @@ PDBFile::PDBFile(const std::string &url) {
 			try {
 				residueEnd = std::stoi(residueEndStr);
 			}
-			catch (std::invalid_argument) {
+			catch (...) {
 				std::cerr << "ERROR > Invalid residue number: " << residueEndStr <<
 					". Skipping sheet...\n\n";
 				continue;
@@ -138,7 +138,7 @@ PDBFile::PDBFile(const std::string &url) {
 			try {
 				residue1 = std::stoi(residue1Str);
 			}
-			catch (std::invalid_argument) {
+			catch (...) {
 				std::cerr << "ERROR > Invalid residue number: " << residue1Str <<
 					". Skipping disulfide bond...\n\n";
 				continue;
@@ -151,7 +151,7 @@ PDBFile::PDBFile(const std::string &url) {
 			try {
 				residue2 = std::stoi(residue2Str);
 			}
-			catch (std::invalid_argument) {
+			catch (...) {
 				std::cerr << "ERROR > Invalid residue number: " << residue2Str <<
 					". Skipping disulfide bond...\n\n";
 				continue;
@@ -180,7 +180,7 @@ PDBFile::PDBFile(const std::string &url) {
 			try {
 				residueNum = std::stoi(residueStr);
 			}
-			catch (std::invalid_argument) {
+			catch (...) {
 				std::cerr << "ERROR > Invalid residue number: " << residueStr <<
 					". Skipping atom...\n\n";
 				continue;

@@ -39,6 +39,7 @@
   <ItemGroup>
     <ClInclude Include="include\bio\AminoAcid.h" />
     <ClInclude Include="include\bio\Atom.h" />
+    <ClInclude Include="include\bio\MoleculeData.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\Clock.h" />
     <ClInclude Include="include\bio\DisulfideBond.h" />
@@ -61,6 +62,7 @@
     <ClInclude Include="include\bio\Protein.h" />
     <ClInclude Include="include\ResourceManager.h" />
     <ClInclude Include="include\bio\Sheet.h" />
+    <ClInclude Include="include\Selection.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source\math\Mat.inl" />

@@ -2,10 +2,12 @@
 #include <vector>
 #include <string>
 #include <thread>
-#include <stdexcept>
+#include <limits>
+#include <utility>
 
 #include "ResourceManager.h"
 #include "Input.h"
+#include "Selection.h"
 #include "bio/Protein.h"
 #include "bio/PDBFile.h"
 #include "math/Vec.h"
@@ -16,6 +18,9 @@
 #include "graphics/SphereTemplate.h"
 #include "graphics/ConnectorTemplate.h"
 #include "graphics/Model.h"
+
+#undef min
+#undef max
 
 std::vector<std::string> commands;
 bool shouldExit = false;
@@ -48,6 +53,7 @@ void displayGraphics() {
 
 	Protein protein;
 	Camera camera(Vec3(0.0f, 0.0f, 10.0f));
+	Selection selection = { Selection::ALL, 0 };
 
 	double prevMouseX = 0.0;
 	double prevMouseY = 0.0;
@@ -101,22 +107,107 @@ void displayGraphics() {
 		for (size_t i = 0; i < commands.size(); ++i) {
 			if (commands[0].size() > 5 && commands[0].substr(0, 4) == "load") {
 				std::string url = commands[0].substr(5);
-				PDBFile file(url);
-				protein = Protein(&file);
-				Model::loadPDB(&file);
+				PDBFile *file = new PDBFile(url);
+				protein = Protein(file);
+				Model::loadMoleculeData(file);
 			}
 			else if (commands[0] == "reset") {
 				Model::reset();
+				Model::delMoleculeData();
 				protein.reset();
 				camera.reset();
+				selection.tag = Selection::ALL;
 			}
 			else if (commands[0] == "print sequence") {
 				std::cout << protein << "\n\n";
 			}
+			else if (commands[0] == "print selection") {
+				switch (selection.tag) {
+				case Selection::ALL:
+					std::cout << "All\n\n";
+					break;
+				case Selection::NONE:
+					std::cout << "None\n\n";
+					break;
+				case Selection::RESIDUE:
+					std::cout << "Residue: " << selection.residue << "\n\n";
+					break;
+				case Selection::RESIDUE_RANGE:
+					std::cout << "Residues: " << selection.residueRange.first << ":" <<
+						selection.residueRange.second << "\n\n";
+					break;
+				case Selection::ELEMENT:
+					std::cout << "Element: " << selection.element << "\n\n";
+					break;
+				case Selection::CHAIN:
+					std::cout << "Chain: " << selection.chain << "\n\n";
+				}
+			}
+			else if (commands[0].size() > 7 && commands[0].substr(0, 6) == "select") {
+				std::string selectQuery = commands[0].substr(7);
+				size_t colonPos = selectQuery.find(":");
+
+				//Residue range provided
+				if (colonPos != std::string::npos) {
+					/*
+					num1:num2
+					:num2 -> 0:num2
+					num1: -> num1:end
+					: -> 0:end
+					*/
+					
+					int start = -1, end = -1;
+
+					if (colonPos != 0) {
+						std::string startStr = selectQuery.substr(0, colonPos);
+						try {
+							start = std::stoi(startStr);
+						}
+						catch (...) {
+							std::cerr << "ERROR > Invalid start residue\n\n";
+							start = -1;
+						}
+					}
+					else {
+						start = 0;
+					}
+
+					if (colonPos != selectQuery.size() - 1) {
+						std::string endStr = selectQuery.substr(colonPos + 1);
+						try {
+							end = std::stoi(endStr);
+						}
+						catch (...) {
+							std::cerr << "ERROR > Invalid end residue\n\n";
+							end = -1;
+						}
+					}
+					else {
+						end = std::numeric_limits<int>::max();
+					}
+					
+					if (start >= 0 && end >= 0) {
+						selection.tag = Selection::RESIDUE_RANGE;
+						selection.residueRange = std::make_pair(start, end);
+					}
+				}
+
+				//Single residue provided
+				else {
+					try {
+						int residue = std::stoi(selectQuery);
+						selection.tag = Selection::RESIDUE;
+						selection.residue = residue;
+					}
+					catch (...) {
+						std::cerr << "ERROR > Invalid residue\n\n";
+					}
+				}
+			}
 			else if (commands[0].size() > 5 && commands[0].substr(0, 4) == "atom") {
 				std::string radiusStr = commands[0].substr(5);
 				if (radiusStr == "default") {
-					Model::setAtomRadius(SphereTemplate::DEFAULT_RADIUS);
+					Model::setAtomRadius(SphereTemplate::DEFAULT_RADIUS, &selection);
 				}
 				else {
 					try {
@@ -127,9 +218,9 @@ void displayGraphics() {
 						else if (radius < 0) {
 							radius = 0;
 						}
-						Model::setAtomRadius(radius / 1000.0f);
+						Model::setAtomRadius(radius / 1000.0f, &selection);
 					}
-					catch (std::invalid_argument) {
+					catch (...) {
 						std::cerr << "ERROR > Invalid size argument\n\n";
 					}
 				}
@@ -137,7 +228,7 @@ void displayGraphics() {
 			else if (commands[0].size() > 9 && commands[0].substr(0, 8) == "backbone") {
 				std::string radiusStr = commands[0].substr(9);
 				if (radiusStr == "default") {
-					Model::setConnectorRadius(ConnectorTemplate::DEFAULT_RADIUS);
+					//Model::setConnectorRadius(ConnectorTemplate::DEFAULT_RADIUS);
 				}
 				else {
 					try {
@@ -148,9 +239,9 @@ void displayGraphics() {
 						else if (radius < 0) {
 							radius = 0;
 						}
-						Model::setConnectorRadius(radius / 1000.0f);
+						//Model::setConnectorRadius(radius / 1000.0f);
 					}
-					catch (std::invalid_argument) {
+					catch (...) {
 						std::cerr << "ERROR > Invalid size argument\n\n";
 					}
 				}

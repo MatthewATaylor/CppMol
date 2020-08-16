@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cmath>
-#include <stdexcept>
 
 #include "Vec.h"
 #include "Mat.h"

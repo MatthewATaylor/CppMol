@@ -43,6 +43,8 @@
     <ClInclude Include="include\bio\Helix.h" />
     <ClInclude Include="include\bio\Protein.h" />
     <ClInclude Include="include\bio\Sheet.h" />
+    <ClInclude Include="include\Selection.h" />
+    <ClInclude Include="include\bio\MoleculeData.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source\math\Mat.inl" />

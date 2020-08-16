@@ -34,7 +34,9 @@
     <ClCompile Include="source\math\MathUtils.cpp" />
     <ClCompile Include="source\bio\PDBFile.cpp" />
     <ClCompile Include="source\bio\Protein.cpp" />
+    <ClCompile Include="source\Parser.cpp" />
     <ClCompile Include="source\ResourceManager.cpp" />
+    <ClCompile Include="source\Selection.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\bio\AminoAcid.h" />
@@ -60,6 +62,7 @@
     <ClInclude Include="include\math\Vec_4.h" />
     <ClInclude Include="include\bio\PDBFile.h" />
     <ClInclude Include="include\bio\Protein.h" />
+    <ClInclude Include="include\Parser.h" />
     <ClInclude Include="include\ResourceManager.h" />
     <ClInclude Include="include\bio\Sheet.h" />
     <ClInclude Include="include\Selection.h" />
@@ -146,6 +149,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\Matth\Documents\Visual Studio 2017\Programs\C++ Programs\CppMol\CppMol\lib\curl-7.71.1-win64-mingw\include;C:\Users\Matth\Documents\Visual Studio 2017\Programs\C++ Programs\CppMol\CppMol\include;C:\Users\Matth\Documents\Visual Studio 2017\Programs\C++ Programs\CppMol\CppMol\lib\glew-2.1.0-win32\glew-2.1.0\include;C:\Users\Matth\Documents\Visual Studio 2017\Programs\C++ Programs\CppMol\CppMol\lib\glfw-3.3.2.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -181,6 +185,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\Matth\Documents\Visual Studio 2017\Programs\C++ Programs\CppMol\CppMol\lib\curl-7.71.1-win64-mingw\include;C:\Users\Matth\Documents\Visual Studio 2017\Programs\C++ Programs\CppMol\CppMol\include;C:\Users\Matth\Documents\Visual Studio 2017\Programs\C++ Programs\CppMol\CppMol\lib\glew-2.1.0-win32\glew-2.1.0\include;C:\Users\Matth\Documents\Visual Studio 2017\Programs\C++ Programs\CppMol\CppMol\lib\glfw-3.3.2.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

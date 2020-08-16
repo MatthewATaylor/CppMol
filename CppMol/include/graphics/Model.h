@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <cctype>
 
 #include <GL/glew.h>
 
@@ -12,6 +13,7 @@
 #include "Connector.h"
 #include "ConnectorTemplate.h"
 #include "Selection.h"
+#include "Parser.h"
 #include "bio/MoleculeData.h"
 #include "math/Mat.h"
 #include "math/Vec.h"

@@ -17,6 +17,8 @@
     <ClCompile Include="source\bio\AminoAcid.cpp" />
     <ClCompile Include="source\bio\PDBFile.cpp" />
     <ClCompile Include="source\bio\Protein.cpp" />
+    <ClCompile Include="source\Selection.cpp" />
+    <ClCompile Include="source\Parser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\HTTPConnection.h" />
@@ -45,6 +47,7 @@
     <ClInclude Include="include\bio\Sheet.h" />
     <ClInclude Include="include\Selection.h" />
     <ClInclude Include="include\bio\MoleculeData.h" />
+    <ClInclude Include="include\Parser.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source\math\Mat.inl" />

@@ -1,19 +1,10 @@
 #include "bio/PDBFile.h"
 
-void PDBFile::removeSpaces(std::string &str) {
-	str.erase(
-		std::remove(str.begin(), str.end(), ' '),
-		str.end()
-	);
-}
-
 PDBFile::PDBFile(const std::string &url) {
 	//Valid extension (.pdb)
 	if (url.size() > 4) {
 		std::string extension = url.substr(url.size() - 4);
-		for (unsigned int i = 0; i < extension.size(); ++i) {
-			extension[i] = std::tolower(extension[i]);
-		}
+		extension = Parser::lowercase(extension);
 		if (extension != ".pdb") {
 			std::cerr << "ERROR > Invalid webpage: expected a PDB file\n\n";
 			return;
@@ -163,7 +154,7 @@ PDBFile::PDBFile(const std::string &url) {
 		//Append atom
 		else if (fileLine.substr(0, 4) == "ATOM") {
 			std::string name = fileLine.substr(12, 4);
-			removeSpaces(name);
+			name = Parser::removeSpaces(name);
 
 			std::string abbr3 = fileLine.substr(17, 3); //Read 3-letter residue abbreviation
 			const AminoAcid *aminoAcid = AminoAcid::get(abbr3);
@@ -193,7 +184,7 @@ PDBFile::PDBFile(const std::string &url) {
 			Vec3 coords(std::stof(xStr), std::stof(yStr), std::stof(zStr));
 
 			std::string element = fileLine.substr(76, 2);
-			removeSpaces(element);
+			element = Parser::removeSpaces(element);
 
 			atoms.push_back({ name, aminoAcid, chain, residueNum, coords, element });
 		}

@@ -47,21 +47,8 @@ void Model::addSphere(
 }
 
 bool Model::selectionIsValid(const Selection *selection) {
-	switch (selection->tag) {
-	case Selection::ALL:
-	case Selection::NONE:
-		break;
-	case Selection::RESIDUE:
-	case Selection::RESIDUE_RANGE:
-	case Selection::ELEMENT:
-	case Selection::CHAIN:
-		if (!moleculeData || moleculeData->atoms.size() == 0) {
-			std::cerr << "ERROR > No atoms found\n\n";
-			return false;
-		}
-		break;
-	default:
-		std::cerr << "ERROR > Invalid selection type\n\n";
+	if (!moleculeData || moleculeData->atoms.size() == 0) {
+		std::cerr << "ERROR > No atoms found\n\n";
 		return false;
 	}
 	return true;
@@ -336,46 +323,40 @@ void Model::setAtomRadius(float radius, const Selection *selection) {
 		return (i - 3) / 7;
 	};
 	for (size_t i = 3; i < atomSpheres.size(); i += 7) {
-		switch (selection->tag) {
-		case Selection::ALL:
-			atomSpheres[i] = radius;
-			break;
-		case Selection::NONE:
-			break;
-		case Selection::RESIDUE:
-			{
-				int residueNum = moleculeData->atoms[getAtomNum(i)].residueNum;
-				if (residueNum == selection->residue) {
-					atomSpheres[i] = radius;
-				}
-				break;
-			}
-		case Selection::RESIDUE_RANGE:
-			{
-				int residueNum = moleculeData->atoms[getAtomNum(i)].residueNum;
-				if (residueNum >= selection->residueRange.first &&
-					residueNum <= selection->residueRange.second) {
-
-					atomSpheres[i] = radius;
-				}
-				break;
-			}
-		case Selection::ELEMENT:
-			{
-				std::string element = moleculeData->atoms[getAtomNum(i)].element;
-				if (element == selection->element) {
-					atomSpheres[i] = radius;
-				}
-				break;
-			}
-		case Selection::CHAIN:
-			{
-				char chain = moleculeData->atoms[getAtomNum(i)].chain;
-				if (chain == selection->chain) {
-					atomSpheres[i] = radius;
-				}
+		if (selection->residue) {
+			int residueNum = moleculeData->atoms[getAtomNum(i)].residueNum;
+			if (residueNum != selection->residue) {
+				continue;
 			}
 		}
+		else if (selection->residueRange) {
+			int residueNum = moleculeData->atoms[getAtomNum(i)].residueNum;
+			if ((selection->residueRange->first && 
+				residueNum < *(selection->residueRange->first)) ||
+				(selection->residueRange->second &&
+				residueNum > *(selection->residueRange->second))) {
+
+				continue;
+			}
+		}
+		
+		if (selection->element) {
+			std::string element = moleculeData->atoms[getAtomNum(i)].element;
+			if (Parser::lowercase(element) != 
+				Parser::lowercase(*(selection->element))) {
+
+				continue;
+			}
+		}
+
+		if (selection->chain) {
+			char chain = moleculeData->atoms[getAtomNum(i)].chain;
+			if (std::tolower(chain) != std::tolower(*(selection->chain))) {
+				continue;
+			}
+		}
+
+		atomSpheres[i] = radius;
 	}
 	syncSphereBuffer(true, false);
 }

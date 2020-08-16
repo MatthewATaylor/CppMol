@@ -2,8 +2,8 @@
 #include <vector>
 #include <string>
 #include <thread>
-#include <limits>
 #include <utility>
+#include <optional>
 
 #include "ResourceManager.h"
 #include "Input.h"
@@ -18,9 +18,6 @@
 #include "graphics/SphereTemplate.h"
 #include "graphics/ConnectorTemplate.h"
 #include "graphics/Model.h"
-
-#undef min
-#undef max
 
 std::vector<std::string> commands;
 bool shouldExit = false;
@@ -53,7 +50,7 @@ void displayGraphics() {
 
 	Protein protein;
 	Camera camera(Vec3(0.0f, 0.0f, 10.0f));
-	Selection selection = { Selection::ALL, 0 };
+	Selection selection;
 
 	double prevMouseX = 0.0;
 	double prevMouseY = 0.0;
@@ -116,93 +113,17 @@ void displayGraphics() {
 				Model::delMoleculeData();
 				protein.reset();
 				camera.reset();
-				selection.tag = Selection::ALL;
+				selection.reset();
 			}
 			else if (commands[0] == "print sequence") {
 				std::cout << protein << "\n\n";
 			}
 			else if (commands[0] == "print selection") {
-				switch (selection.tag) {
-				case Selection::ALL:
-					std::cout << "All\n\n";
-					break;
-				case Selection::NONE:
-					std::cout << "None\n\n";
-					break;
-				case Selection::RESIDUE:
-					std::cout << "Residue: " << selection.residue << "\n\n";
-					break;
-				case Selection::RESIDUE_RANGE:
-					std::cout << "Residues: " << selection.residueRange.first << ":" <<
-						selection.residueRange.second << "\n\n";
-					break;
-				case Selection::ELEMENT:
-					std::cout << "Element: " << selection.element << "\n\n";
-					break;
-				case Selection::CHAIN:
-					std::cout << "Chain: " << selection.chain << "\n\n";
-				}
+				selection.print();
 			}
 			else if (commands[0].size() > 7 && commands[0].substr(0, 6) == "select") {
 				std::string selectQuery = commands[0].substr(7);
-				size_t colonPos = selectQuery.find(":");
-
-				//Residue range provided
-				if (colonPos != std::string::npos) {
-					/*
-					num1:num2
-					:num2 -> 0:num2
-					num1: -> num1:end
-					: -> 0:end
-					*/
-					
-					int start = -1, end = -1;
-
-					if (colonPos != 0) {
-						std::string startStr = selectQuery.substr(0, colonPos);
-						try {
-							start = std::stoi(startStr);
-						}
-						catch (...) {
-							std::cerr << "ERROR > Invalid start residue\n\n";
-							start = -1;
-						}
-					}
-					else {
-						start = 0;
-					}
-
-					if (colonPos != selectQuery.size() - 1) {
-						std::string endStr = selectQuery.substr(colonPos + 1);
-						try {
-							end = std::stoi(endStr);
-						}
-						catch (...) {
-							std::cerr << "ERROR > Invalid end residue\n\n";
-							end = -1;
-						}
-					}
-					else {
-						end = std::numeric_limits<int>::max();
-					}
-					
-					if (start >= 0 && end >= 0) {
-						selection.tag = Selection::RESIDUE_RANGE;
-						selection.residueRange = std::make_pair(start, end);
-					}
-				}
-
-				//Single residue provided
-				else {
-					try {
-						int residue = std::stoi(selectQuery);
-						selection.tag = Selection::RESIDUE;
-						selection.residue = residue;
-					}
-					catch (...) {
-						std::cerr << "ERROR > Invalid residue\n\n";
-					}
-				}
+				selection.parseQuery(selectQuery);
 			}
 			else if (commands[0].size() > 5 && commands[0].substr(0, 4) == "atom") {
 				std::string radiusStr = commands[0].substr(5);

@@ -8,6 +8,7 @@
 #include "ResourceManager.h"
 #include "Input.h"
 #include "Selection.h"
+#include "Parser.h"
 #include "bio/Protein.h"
 #include "bio/PDBFile.h"
 #include "math/Vec.h"
@@ -102,35 +103,38 @@ void displayGraphics() {
 
 		//Read commands sent from console
 		for (size_t i = 0; i < commands.size(); ++i) {
-			if (commands[0].size() > 5 && commands[0].substr(0, 4) == "load") {
-				std::string url = commands[0].substr(5);
+			std::vector<std::string> commandWords = Parser::split(commands[0], ' ');
+			if (commandWords.size() == 2 && commandWords[0] == "load") {
+				std::string url = commandWords[1];
 				PDBFile *file = new PDBFile(url);
 				protein = Protein(file);
 				Model::loadMoleculeData(file);
 			}
-			else if (commands[0] == "unload") {
+			else if (commandWords.size() == 1 && commandWords[0] == "unload") {
 				Model::reset();
 				Model::delMoleculeData();
 				protein.reset();
 				camera.reset();
 				selection.reset();
 			}
-			else if (commands[0] == "reset") {
+			else if (commandWords.size() == 1 && commandWords[0] == "reset") {
 				selection.reset();
 				Model::setAtomRadius(SphereTemplate::DEFAULT_RADIUS, &selection);
 				Model::setConnectorRadius(SphereTemplate::DEFAULT_RADIUS, &selection);
 			}
-			else if (commands[0] == "print sequence") {
-				std::cout << protein << "\n\n";
+			else if (commandWords.size() == 2 && commandWords[0] == "print") {
+				if (commandWords[1] == "sequence") {
+					std::cout << protein << "\n\n";
+				}
+				else if (commandWords[1] == "selection") {
+					selection.print();
+				}
 			}
-			else if (commands[0] == "print selection") {
-				selection.print();
-			}
-			else if (commands[0].size() > 7 && commands[0].substr(0, 6) == "select") {
+			else if (commands[0].size() > 7 && commands[0].substr(0, 7) == "select ") {
 				std::string selectQuery = commands[0].substr(7);
 				selection.parseQuery(selectQuery);
 			}
-			else if (commands[0].size() > 9 && commands[0].substr(0, 8) == "restrict") {
+			else if (commands[0].size() > 9 && commands[0].substr(0, 9) == "restrict ") {
 				std::string selectQuery = commands[0].substr(9);
 				selection.parseQuery(selectQuery);
 
@@ -138,8 +142,8 @@ void displayGraphics() {
 				Model::setAtomRadius(0.0f, &selection, true);
 				Model::setConnectorRadius(0.0f, &selection, true);
 			}
-			else if (commands[0].size() > 5 && commands[0].substr(0, 4) == "atom") {
-				std::string radiusStr = commands[0].substr(5);
+			else if (commandWords.size() == 2 && commandWords[0] == "atom") {
+				std::string radiusStr = commandWords[1];
 				if (radiusStr == "default") {
 					Model::setAtomRadius(SphereTemplate::DEFAULT_RADIUS, &selection);
 				}
@@ -159,8 +163,8 @@ void displayGraphics() {
 					}
 				}
 			}
-			else if (commands[0].size() > 9 && commands[0].substr(0, 8) == "backbone") {
-				std::string radiusStr = commands[0].substr(9);
+			else if (commandWords.size() == 2 && commandWords[0] == "backbone") {
+				std::string radiusStr = commandWords[1];
 				if (radiusStr == "default") {
 					Model::setConnectorRadius(ConnectorTemplate::DEFAULT_RADIUS, &selection);
 				}

@@ -134,21 +134,23 @@ void Model::loadMoleculeData(const MoleculeData *moleculeData) {
 	}
 
 	//Construct backbone using connectors
-	for (size_t i = 0; i < alphaCarbons.size() - 1; ++i) {
-		//Same chain, no residues skipped
-		if (alphaCarbons[i]->chain == alphaCarbons[i + 1]->chain &&
-			(alphaCarbons[i]->residueNum == alphaCarbons[i + 1]->residueNum ||
-				alphaCarbons[i]->residueNum + 1 == alphaCarbons[i + 1]->residueNum)) {
+	if (alphaCarbons.size() >= 2) {
+		for (size_t i = 0; i < alphaCarbons.size() - 1; ++i) {
+			//Same chain, no residues skipped
+			if (alphaCarbons[i]->chain == alphaCarbons[i + 1]->chain &&
+				(alphaCarbons[i]->residueNum == alphaCarbons[i + 1]->residueNum ||
+					alphaCarbons[i]->residueNum + 1 == alphaCarbons[i + 1]->residueNum)) {
 
-			Vec3 coords1 = alphaCarbons[i]->coords * coordScale - coordAverages;
-			Vec3 coords2 = alphaCarbons[i + 1]->coords * coordScale - coordAverages;
+				Vec3 coords1 = alphaCarbons[i]->coords * coordScale - coordAverages;
+				Vec3 coords2 = alphaCarbons[i + 1]->coords * coordScale - coordAverages;
 
-			addConnector(
-				alphaCarbons[i], alphaCarbons[i + 1],
-				ConnectorTemplate::DEFAULT_RADIUS,
-				0.39f, 0.39f, 0.39f,
-				coords1, coords2
-			);
+				addConnector(
+					alphaCarbons[i], alphaCarbons[i + 1],
+					ConnectorTemplate::DEFAULT_RADIUS,
+					0.39f, 0.39f, 0.39f,
+					coords1, coords2
+				);
+			}
 		}
 	}
 

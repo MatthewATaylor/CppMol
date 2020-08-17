@@ -4,7 +4,6 @@
 #include <string>
 #include <utility>
 #include <optional>
-#include <stdexcept>
 
 #include "Parser.h"
 #include "bio/Atom.h"

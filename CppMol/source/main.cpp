@@ -125,6 +125,14 @@ void displayGraphics() {
 				std::string selectQuery = commands[0].substr(7);
 				selection.parseQuery(selectQuery);
 			}
+			else if (commands[0].size() > 9 && commands[0].substr(0, 8) == "restrict") {
+				std::string selectQuery = commands[0].substr(9);
+				selection.parseQuery(selectQuery);
+
+				//Hide all renderables but those in selection
+				Model::setAtomRadius(0.0f, &selection, true);
+				Model::setConnectorRadius(0.0f, &selection, true);
+			}
 			else if (commands[0].size() > 5 && commands[0].substr(0, 4) == "atom") {
 				std::string radiusStr = commands[0].substr(5);
 				if (radiusStr == "default") {
@@ -149,7 +157,7 @@ void displayGraphics() {
 			else if (commands[0].size() > 9 && commands[0].substr(0, 8) == "backbone") {
 				std::string radiusStr = commands[0].substr(9);
 				if (radiusStr == "default") {
-					//Model::setConnectorRadius(ConnectorTemplate::DEFAULT_RADIUS);
+					Model::setConnectorRadius(ConnectorTemplate::DEFAULT_RADIUS, &selection);
 				}
 				else {
 					try {
@@ -160,7 +168,7 @@ void displayGraphics() {
 						else if (radius < 0) {
 							radius = 0;
 						}
-						//Model::setConnectorRadius(radius / 1000.0f);
+						Model::setConnectorRadius(radius / 1000.0f, &selection);
 					}
 					catch (...) {
 						std::cerr << "ERROR > Invalid size argument\n\n";

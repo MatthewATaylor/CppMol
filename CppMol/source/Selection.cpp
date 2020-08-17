@@ -12,7 +12,7 @@ void Selection::reset() {
 	chain.reset();
 }
 
-void Selection::print() {
+void Selection::print() const {
 	if (residue) {
 		std::cout << "Residue: " << *residue << "   ";
 	}
@@ -39,6 +39,34 @@ void Selection::parseQuery(const std::string &query) {
 	std::optional<std::pair<std::optional<int>, std::optional<int>>> newResidueRange;
 	std::optional<std::string> newElement;
 	std::optional<char> newChain;
+
+	std::string paramNames[] = { "r=", "e=", "c=" };
+
+	//Check for invalid input
+	std::vector<std::string> words = Parser::split(query, ' ');
+	for (size_t i = 0; i < words.size(); ++i) {
+		if (words[i] == "select") {
+			continue;
+		}
+		if (words[i].size() <= 2) {
+			std::cerr << "ERROR > Invalid argument: " << words[i] << "\n\n";
+			return;
+		}
+		
+		std::string paramName = words[i].substr(0, 2);
+		bool paramNameIsValid = false;
+		for (unsigned int i = 0; i < 3; ++i) {
+			if (paramName == paramNames[i]) {
+				paramNameIsValid = true;
+				break;
+			}
+		}
+
+		if (!paramNameIsValid) {
+			std::cerr << "ERROR > Invalid argument: " << words[i] << "\n\n";
+			return;
+		}
+	}
 
 	//Parse residue selection
 	std::string residueArg = Parser::getArg("r", query);
@@ -114,4 +142,43 @@ void Selection::parseQuery(const std::string &query) {
 	residueRange = newResidueRange;
 	element = newElement;
 	chain = newChain;
+}
+
+bool Selection::isMatch(const Atom *atom, bool reversed) const {
+	if (residue) {
+		int residueNum = atom->residueNum;
+		bool match = residueNum == residue;
+		if ((reversed && match) || (!reversed && !match)) {
+			return false;
+		}
+	}
+	else if (residueRange) {
+		int residueNum = atom->residueNum;
+		bool match =
+			(residueRange->first && residueNum >= *(residueRange->first)) ||
+			(residueRange->second && residueNum <= *(residueRange->second));
+		if ((reversed && match) || (!reversed && !match)) {
+			return false;
+		}
+	}
+
+	if (element) {
+		std::string element = atom->element;
+		bool match =
+			Parser::lowercase(element) ==
+			Parser::lowercase(*(this->element));
+		if ((reversed && match) || (!reversed && !match)) {
+			return false;
+		}
+	}
+
+	if (chain) {
+		char chain = atom->chain;
+		bool match = std::tolower(chain) == std::tolower(*(this->chain));
+		if ((reversed && match) || (!reversed && !match)) {
+			return false;
+		}
+	}
+
+	return true;
 }

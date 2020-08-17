@@ -1,9 +1,11 @@
 #include "graphics/Connector.h"
 
 Connector::Connector(
+	const Atom *atom1, const Atom *atom2,
 	float radius, float r, float g, float b,
 	const Vec3 &point1, const Vec3 &point2) :
 
+	atom1(atom1), atom2(atom2),
 	radius(radius), r(r), g(g), b(b) {
 
 	length = std::sqrt(

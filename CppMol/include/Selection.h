@@ -7,6 +7,7 @@
 #include <stdexcept>
 
 #include "Parser.h"
+#include "bio/Atom.h"
 
 class Selection {
 public:
@@ -21,6 +22,7 @@ public:
 	Selection();
 
 	void reset();
-	void print();
+	void print() const;
 	void parseQuery(const std::string &query);
+	bool isMatch(const Atom *atom, bool reversed = false) const;
 };

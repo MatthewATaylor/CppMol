@@ -15,6 +15,7 @@
 #include "Selection.h"
 #include "Parser.h"
 #include "bio/MoleculeData.h"
+#include "bio/Atom.h"
 #include "math/Mat.h"
 #include "math/Vec.h"
 #include "math/MathUtils.h"
@@ -65,6 +66,7 @@ public:
 		float r, float g, float b
 	);
 	static void addConnector(
+		const Atom *atom1, const Atom *atom2,
 		float radius,
 		float r, float g, float b,
 		const Vec3 &point1, const Vec3 &point2
@@ -92,8 +94,12 @@ public:
 		const Camera *camera
 	);
 
-	static void setAtomRadius(float radius, const Selection *selection);
-	//static void setConnectorRadius(float radius, const Selection *selection);
+	static void setAtomRadius(
+		float radius, const Selection *selection, bool reversed = false
+	);
+	static void setConnectorRadius(
+		float radius, const Selection *selection, bool reversed = false
+	);
 
 	static void rotate(const Vec3 &angleRadians);
 };

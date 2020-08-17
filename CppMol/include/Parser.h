@@ -3,11 +3,16 @@
 #include <algorithm>
 #include <cctype>
 #include <string>
+#include <vector>
+#include <sstream>
 
 class Parser {
 public:
 	static std::string removeSpaces(std::string str);
 	static std::string lowercase(std::string str);
+
+	//Split string into vector of substrings separated by the delimiter
+	static std::vector<std::string> split(const std::string &str, char delimiter);
 
 	/*
 	Get argument from str where paramName and the argument

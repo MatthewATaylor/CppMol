@@ -6,6 +6,7 @@
 
 #include "ConnectorTemplate.h"
 #include "Shader.h"
+#include "bio/Atom.h"
 #include "math/Vec.h"
 #include "math/Mat.h"
 #include "math/MathUtils.h"
@@ -22,7 +23,11 @@ private:
 	Mat4 translationMatrix;
 
 public:
+	const Atom *atom1;
+	const Atom *atom2;
+
 	Connector(
+		const Atom *atom1, const Atom *atom2,
 		float radius, float r, float g, float b,
 		const Vec3 &point1, const Vec3 &point2
 	);

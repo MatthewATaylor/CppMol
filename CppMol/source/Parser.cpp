@@ -15,6 +15,18 @@ std::string Parser::lowercase(std::string str) {
 	return str;
 }
 
+std::vector<std::string> Parser::split(const std::string &str, char delimiter) {
+	std::istringstream strStream(str);
+	std::string element;
+	std::vector<std::string> result;
+	while (std::getline(strStream, element, delimiter)) {
+		if (!element.empty()) {
+			result.push_back(element);
+		}
+	}
+	return result;
+}
+
 std::string Parser::getArg(const std::string &paramName, const std::string &str) {
 	std::string paramIndicator = paramName + "=";
 	size_t paramPos = str.find(paramIndicator);

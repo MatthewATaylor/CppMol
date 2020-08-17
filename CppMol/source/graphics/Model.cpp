@@ -92,12 +92,7 @@ void Model::loadMoleculeData(const MoleculeData *moleculeData) {
 	float coordScale = 8.0f / maxCoord;
 	Vec3 coordAverages = coordSums * coordScale / (float)moleculeData->atoms.size();
 
-	struct AlphaCarbonData {
-		char chain;
-		int residueNum;
-		Vec3 coords;
-	};
-	std::vector<AlphaCarbonData> alphaCarbonData;
+	std::vector<const Atom*> alphaCarbons;
 
 	for (size_t i = 0; i < moleculeData->atoms.size(); ++i) {
 		float r = 0.0f, g = 0.0f, b = 0.0f;
@@ -126,33 +121,33 @@ void Model::loadMoleculeData(const MoleculeData *moleculeData) {
 			return;
 		}
 
-		Vec3 coords = moleculeData->atoms[i].coords * coordScale - coordAverages;
-
 		//Add to alpha carbon data for constructing backbone
 		if (moleculeData->atoms[i].name == "CA") {
-			alphaCarbonData.push_back({
-				moleculeData->atoms[i].chain, moleculeData->atoms[i].residueNum, coords
-			});
+			alphaCarbons.push_back(&(moleculeData->atoms[i]));
 		}
 
 		addAtom(
-			coords,
+			moleculeData->atoms[i].coords * coordScale - coordAverages,
 			SphereTemplate::DEFAULT_RADIUS,
 			r, g, b
 		);
 	}
 
 	//Construct backbone using connectors
-	for (size_t i = 0; i < alphaCarbonData.size() - 1; ++i) {
+	for (size_t i = 0; i < alphaCarbons.size() - 1; ++i) {
 		//Same chain, no residues skipped
-		if (alphaCarbonData[i].chain == alphaCarbonData[i + 1].chain &&
-			(alphaCarbonData[i].residueNum == alphaCarbonData[i + 1].residueNum ||
-				alphaCarbonData[i].residueNum + 1 == alphaCarbonData[i + 1].residueNum)) {
+		if (alphaCarbons[i]->chain == alphaCarbons[i + 1]->chain &&
+			(alphaCarbons[i]->residueNum == alphaCarbons[i + 1]->residueNum ||
+				alphaCarbons[i]->residueNum + 1 == alphaCarbons[i + 1]->residueNum)) {
+
+			Vec3 coords1 = alphaCarbons[i]->coords * coordScale - coordAverages;
+			Vec3 coords2 = alphaCarbons[i + 1]->coords * coordScale - coordAverages;
 
 			addConnector(
+				alphaCarbons[i], alphaCarbons[i + 1],
 				ConnectorTemplate::DEFAULT_RADIUS,
 				0.39f, 0.39f, 0.39f,
-				alphaCarbonData[i].coords, alphaCarbonData[i + 1].coords
+				coords1, coords2
 			);
 		}
 	}
@@ -165,11 +160,12 @@ void Model::addAtom(const Vec3 &center, float radius, float r, float g, float b)
 	addSphere(center, radius, r, g, b, &atomSpheres);
 }
 void Model::addConnector(
+	const Atom *atom1, const Atom *atom2,
 	float radius,
 	float r, float g, float b,
 	const Vec3 &point1, const Vec3 &point2
 ) {
-	connectors.push_back(new Connector(radius, r, g, b, point1, point2));
+	connectors.push_back(new Connector(atom1, atom2, radius, r, g, b, point1, point2));
 	addSphere(point1, radius, r, g, b, &connectorSpheres);
 	addSphere(point2, radius, r, g, b, &connectorSpheres);
 }
@@ -315,61 +311,37 @@ void Model::render(
 	}
 }
 
-void Model::setAtomRadius(float radius, const Selection *selection) {
+void Model::setAtomRadius(float radius, const Selection *selection, bool reversed) {
 	if (!selectionIsValid(selection)) {
 		return;
 	}
-	auto getAtomNum = [](size_t i) -> size_t {
-		return (i - 3) / 7;
-	};
 	for (size_t i = 3; i < atomSpheres.size(); i += 7) {
-		if (selection->residue) {
-			int residueNum = moleculeData->atoms[getAtomNum(i)].residueNum;
-			if (residueNum != selection->residue) {
-				continue;
-			}
+		if (selection->isMatch(&moleculeData->atoms[(i - 3) / 7], reversed)) {
+			atomSpheres[i] = radius;
 		}
-		else if (selection->residueRange) {
-			int residueNum = moleculeData->atoms[getAtomNum(i)].residueNum;
-			if ((selection->residueRange->first && 
-				residueNum < *(selection->residueRange->first)) ||
-				(selection->residueRange->second &&
-				residueNum > *(selection->residueRange->second))) {
-
-				continue;
-			}
-		}
-		
-		if (selection->element) {
-			std::string element = moleculeData->atoms[getAtomNum(i)].element;
-			if (Parser::lowercase(element) != 
-				Parser::lowercase(*(selection->element))) {
-
-				continue;
-			}
-		}
-
-		if (selection->chain) {
-			char chain = moleculeData->atoms[getAtomNum(i)].chain;
-			if (std::tolower(chain) != std::tolower(*(selection->chain))) {
-				continue;
-			}
-		}
-
-		atomSpheres[i] = radius;
 	}
 	syncSphereBuffer(true, false);
 }
-//void Model::setConnectorRadius(float radius) {
-//	for (size_t i = 3; i < connectorSpheres.size(); i += 7) {
-//		connectorSpheres[i] = radius;
-//	}
-//	syncSphereBuffer(false, true);
-//
-//	for (size_t i = 0; i < connectors.size(); ++i) {
-//		connectors[i]->setRadius(radius);
-//	}
-//}
+void Model::setConnectorRadius(float radius, const Selection *selection, bool reversed) {
+	for (size_t i = 0; i < connectors.size(); ++i) {
+		if (selection->isMatch(connectors[i]->atom1, reversed) &&
+			selection->isMatch(connectors[i]->atom2, reversed)) {
+
+			connectors[i]->setRadius(radius);
+
+			//Set radius of connector spheres
+			size_t sphereIndex1 = i * 2;
+			size_t sphereIndex2 = i * 2 + 1;
+
+			size_t sphereRadiusIndex1 = sphereIndex1 * 7 + 3;
+			size_t sphereRadiusIndex2 = sphereIndex2 * 7 + 3;
+
+			connectorSpheres[sphereRadiusIndex1] = radius;
+			connectorSpheres[sphereRadiusIndex2] = radius;
+		}
+	}
+	syncSphereBuffer(false, true);
+}
 
 void Model::rotate(const Vec3 &angleRadians) {
 	modelMatrix = modelMatrix * MathUtils::MatGen::rotation<float>(angleRadians);

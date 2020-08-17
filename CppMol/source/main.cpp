@@ -108,12 +108,17 @@ void displayGraphics() {
 				protein = Protein(file);
 				Model::loadMoleculeData(file);
 			}
-			else if (commands[0] == "reset") {
+			else if (commands[0] == "unload") {
 				Model::reset();
 				Model::delMoleculeData();
 				protein.reset();
 				camera.reset();
 				selection.reset();
+			}
+			else if (commands[0] == "reset") {
+				selection.reset();
+				Model::setAtomRadius(SphereTemplate::DEFAULT_RADIUS, &selection);
+				Model::setConnectorRadius(SphereTemplate::DEFAULT_RADIUS, &selection);
 			}
 			else if (commands[0] == "print sequence") {
 				std::cout << protein << "\n\n";

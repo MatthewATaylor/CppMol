@@ -14,21 +14,25 @@ void Selection::reset() {
 
 void Selection::print() const {
 	if (residue) {
-		std::cout << "Residue: " << *residue << "   ";
+		std::cout << "Residue: " << *residue << "    ";
 	}
 	else if (residueRange) {
 		int firstStr = residueRange->first ?
 			*(residueRange->first) : 0;
 		std::string secondStr = residueRange->second ?
 			std::to_string(*(residueRange->second)) : "end";
-		std::cout << "Residues: " << firstStr << ":" << secondStr << "   ";
+		std::cout << "Residues: " << firstStr << ":" << secondStr << "    ";
 	}
 
 	if (element) {
-		std::cout << "Element: " << *element << "   ";
+		std::cout << "Element: " << *element << "    ";
 	}
 	if (chain) {
 		std::cout << "Chain: " << *chain;
+	}
+
+	if (!residue && !residueRange && !element && !chain) {
+		std::cout << "Residues: 0:end";
 	}
 
 	std::cout << "\n\n";
@@ -148,17 +152,17 @@ bool Selection::isMatch(const Atom *atom, bool reversed) const {
 	if (residue) {
 		int residueNum = atom->residueNum;
 		bool match = residueNum == residue;
-		if ((reversed && match) || (!reversed && !match)) {
-			return false;
+		if (!match) {
+			return reversed;
 		}
 	}
 	else if (residueRange) {
 		int residueNum = atom->residueNum;
 		bool match =
-			(residueRange->first && residueNum >= *(residueRange->first)) ||
-			(residueRange->second && residueNum <= *(residueRange->second));
-		if ((reversed && match) || (!reversed && !match)) {
-			return false;
+			!((residueRange->first && residueNum < *(residueRange->first)) ||
+			(residueRange->second && residueNum > *(residueRange->second)));
+		if (!match) {
+			return reversed;
 		}
 	}
 
@@ -167,18 +171,18 @@ bool Selection::isMatch(const Atom *atom, bool reversed) const {
 		bool match =
 			Parser::lowercase(element) ==
 			Parser::lowercase(*(this->element));
-		if ((reversed && match) || (!reversed && !match)) {
-			return false;
+		if (!match) {
+			return reversed;
 		}
 	}
 
 	if (chain) {
 		char chain = atom->chain;
 		bool match = std::tolower(chain) == std::tolower(*(this->chain));
-		if ((reversed && match) || (!reversed && !match)) {
-			return false;
+		if (!match) {
+			return reversed;
 		}
 	}
 
-	return true;
+	return !reversed;
 }

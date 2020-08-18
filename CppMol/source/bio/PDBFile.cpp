@@ -16,6 +16,8 @@ PDBFile::PDBFile(const std::string &url) {
 		return;
 	}
 
+	std::string title;
+
 	std::stringstream responseStream(connection.response);
 	std::string fileLine;
 	while (std::getline(responseStream, fileLine)) {
@@ -24,8 +26,12 @@ PDBFile::PDBFile(const std::string &url) {
 			return;
 		}
 
+		if (fileLine.substr(0, 5) == "TITLE") {
+			title = Parser::removeTrailingSpaces(fileLine.substr(10, 70));
+		}
+
 		//Append residue to sequence
-		if (fileLine.substr(0, 6) == "SEQRES") {
+		else if (fileLine.substr(0, 6) == "SEQRES") {
 			//Add unique chain and chain size
 			char chain = fileLine[11];
 			bool chainAdded = false;
@@ -206,4 +212,6 @@ PDBFile::PDBFile(const std::string &url) {
 			atoms.push_back({ name, aminoAcid, chain, residueNum, coords, element });
 		}
 	}
+
+	std::cout << "Loaded: " << title << "\n\n";
 }

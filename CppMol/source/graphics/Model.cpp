@@ -98,6 +98,11 @@ void Model::loadMoleculeData(const MoleculeData *moleculeData) {
 			g = 0.39f;
 			b = 0.39f;
 		}
+		else if (moleculeData->atoms[i].element == "H") {
+			r = 1.0f;
+			g = 1.0f;
+			b = 1.0f;
+		}
 		else if (moleculeData->atoms[i].element == "N") {
 			b = 1.0f;
 		}
@@ -115,7 +120,6 @@ void Model::loadMoleculeData(const MoleculeData *moleculeData) {
 		else {
 			std::cerr << "ERROR > Unknown color for element: " << 
 				moleculeData->atoms[i].element << "\n\n";
-			return;
 		}
 
 		//Add to alpha carbon data for constructing backbone
@@ -323,8 +327,10 @@ void Model::setAtomRadius(float radius, const Selection *selection, bool reverse
 }
 void Model::setConnectorRadius(float radius, const Selection *selection, bool reversed) {
 	for (size_t i = 0; i < connectors.size(); ++i) {
-		if (selection->isMatch(connectors[i]->atom1, reversed) &&
-			selection->isMatch(connectors[i]->atom2, reversed)) {
+		bool atom1IsMatch = selection->isMatch(connectors[i]->atom1, reversed);
+		bool atom2IsMatch = selection->isMatch(connectors[i]->atom2, reversed);
+		if ((!reversed &&  atom1IsMatch && atom2IsMatch) ||
+			(reversed && (atom1IsMatch || atom2IsMatch))) {
 
 			connectors[i]->setRadius(radius);
 

@@ -9,6 +9,7 @@
 class Parser {
 public:
 	static std::string removeSpaces(std::string str);
+	static std::string removeTrailingSpaces(std::string str);
 	static std::string lowercase(std::string str);
 
 	//Split string into vector of substrings separated by the delimiter

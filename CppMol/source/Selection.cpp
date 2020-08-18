@@ -69,6 +69,16 @@ void Selection::parseQuery(const std::vector<std::string> &query) {
 	//Parse residue selection
 	std::string residueArg = Parser::getArg("r", query);
 	if (residueArg.size() > 0) {
+		for (size_t i = 0; i < residueArg.size(); ++i) {
+			if (residueArg[i] != ':' && 
+				residueArg[i] < '0' &&
+				residueArg[i] > '9') {
+
+				std::cerr << "ERROR > Invalid argument: r=" << residueArg << "\n\n";
+				return;
+			}
+		}
+
 		size_t colonPos = residueArg.find(":");
 
 		//Residue range provided

@@ -8,6 +8,16 @@ std::string Parser::removeSpaces(std::string str) {
 	return str;
 }
 
+std::string Parser::removeTrailingSpaces(std::string str) {
+	for (size_t i = str.size() - 1; i >= 0; --i) {
+		if (str[i] != ' ') {
+			break;
+		}
+		str.erase(str.begin() + i);
+	}
+	return str;
+}
+
 std::string Parser::lowercase(std::string str) {
 	for (size_t i = 0; i < str.size(); ++i) {
 		str[i] = std::tolower(str[i]);

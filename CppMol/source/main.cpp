@@ -111,9 +111,17 @@ void displayGraphics() {
 					delete moleculeData;
 					moleculeData = nullptr;
 
-					std::string url = commandWords[2];
+					std::string url;
+					if (commandWords[2].size() == 4) {
+						url = "http://files.rcsb.org/view/" + commandWords[2] + ".pdb";
+					}
+					else {
+						url = commandWords[2];
+					}
+					
 					moleculeData = new PDBFile(url);
 					Model::loadMoleculeData(moleculeData);
+					selection.reset();
 				}
 			}
 			else if (commandWords.size() == 1 && commandWords[0] == "unload") {

@@ -29,5 +29,23 @@ namespace Test {
 			Assert::AreEqual(Parser::getArg("r", Parser::split(command, ' ')), rArg);
 			Assert::AreEqual(Parser::getArg("c", Parser::split(command, ' ')), cArg);
 		}
+		TEST_METHOD(TestParser_removeTrailingSpaces) {
+			Assert::AreEqual(
+				Parser::removeTrailingSpaces("This is a test."),
+				std::string("This is a test.")
+			);
+			Assert::AreEqual(
+				Parser::removeTrailingSpaces("  This is a test.         "),
+				std::string("  This is a test.")
+			);
+			Assert::AreEqual(
+				Parser::removeTrailingSpaces("   "),
+				std::string("")
+			);
+			Assert::AreEqual(
+				Parser::removeTrailingSpaces(""),
+				std::string("")
+			);
+		}
 	};
 }

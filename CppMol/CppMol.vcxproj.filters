@@ -51,6 +51,7 @@
     <ClInclude Include="include\bio\MoleculeData.h" />
     <ClInclude Include="include\Parser.h" />
     <ClInclude Include="include\bio\Chain.h" />
+    <ClInclude Include="include\bio\Residue.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source\math\Mat.inl" />

@@ -1,6 +1,6 @@
 #pragma once
 
 struct Chain {
-	char identifier;
-	size_t length;
+	const char identifier;
+	const size_t length;
 };

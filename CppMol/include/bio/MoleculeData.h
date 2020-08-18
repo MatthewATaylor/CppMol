@@ -3,7 +3,7 @@
 #include <vector>
 #include <iostream>
 
-#include "AminoAcid.h"
+#include "Residue.h"
 #include "Chain.h"
 #include "Helix.h"
 #include "Sheet.h"
@@ -12,7 +12,7 @@
 
 class MoleculeData {
 public:
-	std::vector<const AminoAcid*> sequence;
+	std::vector<Residue> sequence;
 	std::vector<Chain> chains;
 	std::vector<Helix> helices;
 	std::vector<Sheet> sheets;

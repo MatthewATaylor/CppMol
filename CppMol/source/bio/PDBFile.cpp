@@ -33,6 +33,7 @@ PDBFile::PDBFile(const std::string &url) {
 		//Append residue to sequence
 		else if (fileLine.substr(0, 6) == "SEQRES") {
 			//Add unique chain and chain size
+			int residueNum = 1;
 			char chain = fileLine[11];
 			bool chainAdded = false;
 			for (size_t i = 0; i < chains.size(); ++i) {
@@ -42,6 +43,8 @@ PDBFile::PDBFile(const std::string &url) {
 				}
 			}
 			if (!chainAdded) {
+				residueNum = 1; //Reset residue counter
+
 				std::string chainSizeStr = Parser::removeSpaces(fileLine.substr(13, 4));
 				std::stringstream chainSizeStream(chainSizeStr);
 				size_t chainSize;
@@ -49,23 +52,13 @@ PDBFile::PDBFile(const std::string &url) {
 				chains.push_back({ chain, chainSize });
 			}
 
-			for (unsigned int i = 19; i < 80; i += 4) {
-				if (fileLine[i] == ' ') { //Residue list ended
+			//Loop through 3-character residue names
+			for (unsigned int i = 19; i <= 67; i += 4) {
+				if (fileLine.substr(i, 3) == "   ") { //Residue list ended
 					break;
 				}
-				std::string abbr3 = fileLine.substr(i, 3); //Read 3-letter residue abbreviation
-				const AminoAcid *residue = AminoAcid::get(abbr3);
-				if (residue) {
-					sequence.push_back(residue);
-				}
-				else {
-					std::cout << "INFO > Adding amino acid \"" << abbr3 << "\" to dictionary. " <<
-						"Consider creating a dictionary entry yourself.\n\n";
-					const AminoAcid *newAminoAcid = AminoAcid::set("", "", abbr3, "", "");
-					if (newAminoAcid) {
-						sequence.push_back(newAminoAcid);
-					}
-				}
+				std::string name = Parser::removeSpaces(fileLine.substr(i, 3));
+				sequence.push_back({ name, residueNum++, chain });
 			}
 		}
 
@@ -176,17 +169,8 @@ PDBFile::PDBFile(const std::string &url) {
 
 		//Append atom
 		else if (fileLine.substr(0, 4) == "ATOM") {
-			std::string name = fileLine.substr(12, 4);
-			name = Parser::removeSpaces(name);
-
-			std::string abbr3 = fileLine.substr(17, 3); //Read 3-letter residue abbreviation
-			const AminoAcid *aminoAcid = AminoAcid::get(abbr3);
-			if (!aminoAcid) {
-				std::cout << "INFO > Adding amino acid \"" << abbr3 << "\" to dictionary. " <<
-					"Consider creating a dictionary entry yourself.\n\n";
-				aminoAcid = AminoAcid::set("", "", abbr3, "", "");
-			}
-
+			std::string name = Parser::removeSpaces(fileLine.substr(12, 4));
+			std::string residueName = Parser::removeSpaces(fileLine.substr(17, 3));
 			char chain = fileLine[21];
 
 			std::string residueStr = fileLine.substr(22, 4);
@@ -209,7 +193,7 @@ PDBFile::PDBFile(const std::string &url) {
 			std::string element = fileLine.substr(76, 2);
 			element = Parser::removeSpaces(element);
 
-			atoms.push_back({ name, aminoAcid, chain, residueNum, coords, element });
+			atoms.push_back({ name, residueName, chain, residueNum, coords, element });
 		}
 	}
 

@@ -44,6 +44,7 @@
     <ClInclude Include="include\bio\AminoAcid.h" />
     <ClInclude Include="include\bio\Atom.h" />
     <ClInclude Include="include\bio\Chain.h" />
+    <ClInclude Include="include\bio\Residue.h" />
     <ClInclude Include="include\bio\MoleculeData.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\Clock.h" />

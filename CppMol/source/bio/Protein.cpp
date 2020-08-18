@@ -12,7 +12,7 @@ Protein::Protein(std::string sequence) {
 		}
 		else {
 			std::cout << "INFO > Adding amino acid \"" << abbr << "\" to dictionary. " <<
-				"Consider creating a dictionary entry yourself with AminoAcid::set.\n\n";
+				"Consider creating a dictionary entry yourself.\n\n";
 			const AminoAcid *newAminoAcid = AminoAcid::set(abbr, "", "", "", "");
 			if (newAminoAcid) {
 				this->sequence.push_back(newAminoAcid);
@@ -29,7 +29,19 @@ Protein::Protein(const std::vector<const AminoAcid*> &sequence) {
 
 Protein::Protein(const MoleculeData *moleculeData) {
 	for (size_t i = 0; i < moleculeData->sequence.size(); ++i) {
-		sequence.push_back(moleculeData->sequence[i]);
+		std::string name = moleculeData->sequence[i].name;
+		const AminoAcid *aminoAcid = AminoAcid::get(name);
+		if (aminoAcid) {
+			sequence.push_back(aminoAcid);
+		}
+		else {
+			std::cout << "INFO > Adding amino acid \"" << name << "\" to dictionary. " <<
+				"Consider creating a dictionary entry yourself.\n\n";
+			const AminoAcid *newAminoAcid = AminoAcid::set(name, "", "", "", "");
+			if (newAminoAcid) {
+				this->sequence.push_back(newAminoAcid);
+			}
+		}
 	}
 }
 

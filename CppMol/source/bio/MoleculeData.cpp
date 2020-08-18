@@ -6,9 +6,10 @@ void MoleculeData::printSequence() {
 	}
 	else {
 		for (size_t i = 0; i < sequence.size(); ++i) {
-			std::cout << sequence[i]->abbr3 << " ";
+			std::cout << i + 1 << ") " << sequence[i].name << "    r=" <<
+				sequence[i].residueNum << "    c=" << sequence[i].chain << "\n";
 		}
-		std::cout << "\n\n";
+		std::cout << "\n";
 	}
 }
 
@@ -60,7 +61,7 @@ void MoleculeData::printAtoms() {
 	else {
 		for (size_t i = 0; i < atoms.size(); ++i) {
 			std::cout << i + 1 << ") " << atoms[i].name << "    r=" <<
-				atoms[i].residueNum << " (" << atoms[i].aminoAcid->abbr3 <<
+				atoms[i].residueNum << " (" << atoms[i].residueName <<
 				")    e=" << atoms[i].element << "    c=" << atoms[i].chain << "\n";
 		}
 		std::cout << "\n";

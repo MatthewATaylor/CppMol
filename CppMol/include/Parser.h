@@ -15,10 +15,13 @@ public:
 	static std::vector<std::string> split(const std::string &str, char delimiter);
 
 	/*
-	Get argument from str where paramName and the argument
+	Get argument from list of params where paramName and the argument
 	are separated by "="
 
 	Return "" if the parameter is not provided with an argument
 	*/
-	static std::string getArg(const std::string &paramName, const std::string &str);
+	static std::string getArg(
+		const std::string &paramName, 
+		const std::vector<std::string> &params
+	);
 };

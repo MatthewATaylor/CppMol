@@ -27,21 +27,18 @@ std::vector<std::string> Parser::split(const std::string &str, char delimiter) {
 	return result;
 }
 
-std::string Parser::getArg(const std::string &paramName, const std::string &str) {
+std::string Parser::getArg(
+	const std::string &paramName, 
+	const std::vector<std::string> &params
+) {
 	std::string paramIndicator = paramName + "=";
-	size_t paramPos = str.find(paramIndicator);
-
-	if (paramPos == std::string::npos ||
-		str.size() <= paramPos + paramIndicator.size()) {
-
-		return "";
+	for (size_t i = 0; i < params.size(); ++i) {
+		if (params[i].size() > paramIndicator.size()) {
+			std::string paramPrefix = params[i].substr(0, paramIndicator.size());
+			if (paramPrefix == paramIndicator) {
+				return params[i].substr(paramIndicator.size());
+			}
+		}
 	}
-
-	std::string paramFromPos = str.substr(paramPos);
-	size_t argEndPos = paramFromPos.find(" ");
-	if (argEndPos == std::string::npos) {
-		argEndPos = str.size();
-	}
-	size_t argSize = argEndPos - (paramIndicator.size());
-	return paramFromPos.substr(paramIndicator.size(), argSize);
+	return "";
 }

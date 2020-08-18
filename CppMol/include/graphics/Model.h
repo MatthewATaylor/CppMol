@@ -52,7 +52,6 @@ private:
 
 public:
 	static void reset();
-	static void delMoleculeData();
 
 	static void setSphereTemplate(const SphereTemplate *sphereTemplate);
 	static void setConnectorTemplate(const ConnectorTemplate *connectorTemplate);

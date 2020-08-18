@@ -11,6 +11,7 @@
 #include "Parser.h"
 #include "bio/Protein.h"
 #include "bio/PDBFile.h"
+#include "bio/MoleculeData.h"
 #include "math/Vec.h"
 #include "math/Mat.h"
 #include "math/MathUtils.h"
@@ -49,7 +50,7 @@ void displayGraphics() {
 	Model::fillSphereTemplateBuffer();
 
 
-	Protein protein;
+	MoleculeData *moleculeData = nullptr;
 	Camera camera(Vec3(0.0f, 0.0f, 10.0f));
 	Selection selection;
 
@@ -103,17 +104,23 @@ void displayGraphics() {
 
 		//Read commands sent from console
 		for (size_t i = 0; i < commands.size(); ++i) {
-			std::vector<std::string> commandWords = Parser::split(commands[0], ' ');
-			if (commandWords.size() == 2 && commandWords[0] == "load") {
-				std::string url = commandWords[1];
-				PDBFile *file = new PDBFile(url);
-				protein = Protein(file);
-				Model::loadMoleculeData(file);
+			std::vector<std::string> commandWords = 
+				Parser::split(Parser::lowercase(commands[0]), ' ');
+			if (commandWords.size() == 3 && commandWords[0] == "load") {
+				if (commandWords[1] == "pdb") {
+					delete moleculeData;
+					moleculeData = nullptr;
+
+					std::string url = commandWords[2];
+					moleculeData = new PDBFile(url);
+					Model::loadMoleculeData(moleculeData);
+				}
 			}
 			else if (commandWords.size() == 1 && commandWords[0] == "unload") {
+				delete moleculeData;
+				moleculeData = nullptr;
+
 				Model::reset();
-				Model::delMoleculeData();
-				protein.reset();
 				camera.reset();
 				selection.reset();
 			}
@@ -123,24 +130,95 @@ void displayGraphics() {
 				Model::setConnectorRadius(SphereTemplate::DEFAULT_RADIUS, &selection);
 			}
 			else if (commandWords.size() == 2 && commandWords[0] == "print") {
-				if (commandWords[1] == "sequence") {
-					std::cout << protein << "\n\n";
+				const char *noMoleculeDataError = "ERROR > No molecule data loaded\n\n";
+				if (commandWords[1] == "help") {
+					std::cout << "USAGE > print <sequence | helices | sheets | ssbonds " <<
+						"| atoms | chains | selection>\n\n";
+				}
+				else if (commandWords[1] == "sequence") {
+					if (moleculeData) {
+						moleculeData->printSequence();
+					}
+					else {
+						std::cerr << noMoleculeDataError;
+					}
+				}
+				else if (commandWords[1] == "helices") {
+					if (moleculeData) {
+						moleculeData->printHelices();
+					}
+					else {
+						std::cerr << noMoleculeDataError;
+					}
+				}
+				else if (commandWords[1] == "sheets") {
+					if (moleculeData) {
+						moleculeData->printSheets();
+					}
+					else {
+						std::cerr << noMoleculeDataError;
+					}
+				}
+				else if (commandWords[1] == "ssbonds") {
+					if (moleculeData) {
+						moleculeData->printDisulfideBonds();
+					}
+					else {
+						std::cerr << noMoleculeDataError;
+					}
+				}
+				else if (commandWords[1] == "atoms") {
+					if (moleculeData) {
+						moleculeData->printAtoms();
+					}
+					else {
+						std::cerr << noMoleculeDataError;
+					}
+				}
+				else if (commandWords[1] == "chains") {
+					if (moleculeData) {
+						moleculeData->printChains();
+					}
+					else {
+						std::cerr << noMoleculeDataError;
+					}
 				}
 				else if (commandWords[1] == "selection") {
 					selection.print();
 				}
+				else {
+					std::cerr << "ERROR > Invalid argument: " << commandWords[1] << "\n\n";
+				}
 			}
-			else if (commands[0].size() > 7 && commands[0].substr(0, 7) == "select ") {
-				std::string selectQuery = commands[0].substr(7);
-				selection.parseQuery(selectQuery);
+			else if (commandWords.size() > 1 && commandWords[0] == "select") {
+				//Help message
+				if (commandWords.size() == 2 && commandWords[1] == "help") {
+					std::cout <<
+						"USAGE > select [r=<start residue>:<end residue> | r=<residue>] " <<
+						"[e=<element>] [c=<chain>]\n\n";
+				}
+				else {
+					std::vector<std::string> selectQuery = commandWords;
+					selectQuery.erase(selectQuery.begin()); //Remove "select"
+					selection.parseQuery(selectQuery);
+				}
 			}
-			else if (commands[0].size() > 9 && commands[0].substr(0, 9) == "restrict ") {
-				std::string selectQuery = commands[0].substr(9);
-				selection.parseQuery(selectQuery);
+			else if (commandWords.size() > 1 && commandWords[0] == "restrict") {
+				//Help message
+				if (commandWords.size() == 2 && commandWords[1] == "help") {
+					std::cout <<
+						"USAGE > restrict [r=<start residue>:<end residue> | r=<residue>] " <<
+						"[e=<element>] [c=<chain>]\n\n";
+				}
+				else {
+					std::vector<std::string> selectQuery = commandWords;
+					selectQuery.erase(selectQuery.begin()); //Remove "restrict"
+					selection.parseQuery(selectQuery);
 
-				//Hide all renderables but those in selection
-				Model::setAtomRadius(0.0f, &selection, true);
-				Model::setConnectorRadius(0.0f, &selection, true);
+					//Hide all renderables but those in selection
+					Model::setAtomRadius(0.0f, &selection, true);
+					Model::setConnectorRadius(0.0f, &selection, true);
+				}
 			}
 			else if (commandWords.size() == 2 && commandWords[0] == "atom") {
 				std::string radiusStr = commandWords[1];

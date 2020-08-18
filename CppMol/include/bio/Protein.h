@@ -11,7 +11,7 @@
 #include "AminoAcid.h"
 #include "Atom.h"
 #include "HTTPConnection.h"
-#include "PDBFile.h"
+#include "MoleculeData.h"
 #include "graphics/SphereTemplate.h"
 #include "graphics/Model.h"
 
@@ -22,7 +22,7 @@ public:
 	Protein();
 	Protein(std::string sequence);
 	Protein(const std::vector<const AminoAcid*> &sequence);
-	Protein(const PDBFile *pdbFile);
+	Protein(const MoleculeData *moleculeData);
 
 	//Clear vectors
 	void reset();

@@ -22,6 +22,9 @@ public:
 
 	void reset();
 	void print() const;
-	void parseQuery(const std::string &query);
+
+	//Parse vector of selection query parameters
+	void parseQuery(const std::vector<std::string> &query);
+
 	bool isMatch(const Atom *atom, bool reversed = false) const;
 };

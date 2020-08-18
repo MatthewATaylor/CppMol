@@ -38,36 +38,30 @@ void Selection::print() const {
 	std::cout << "\n\n";
 }
 
-void Selection::parseQuery(const std::string &query) {
+void Selection::parseQuery(const std::vector<std::string> &query) {
 	std::optional<int> newResidue;
 	std::optional<std::pair<std::optional<int>, std::optional<int>>> newResidueRange;
 	std::optional<std::string> newElement;
 	std::optional<char> newChain;
 
-	std::string paramNames[] = { "r=", "e=", "c=" };
+	const unsigned int NUM_PARAMS = 3;
+	std::string paramNames[NUM_PARAMS] = { "r=", "e=", "c=" };
 
 	//Check for invalid input
-	std::vector<std::string> words = Parser::split(query, ' ');
-	for (size_t i = 0; i < words.size(); ++i) {
-		if (words[i] == "select") {
-			continue;
-		}
-		if (words[i].size() <= 2) {
-			std::cerr << "ERROR > Invalid argument: " << words[i] << "\n\n";
-			return;
-		}
-		
-		std::string paramName = words[i].substr(0, 2);
+	for (size_t i = 0; i < query.size(); ++i) {
 		bool paramNameIsValid = false;
-		for (unsigned int i = 0; i < 3; ++i) {
-			if (paramName == paramNames[i]) {
-				paramNameIsValid = true;
-				break;
+		for (unsigned int j = 0; j < NUM_PARAMS; ++j) {
+			if (query[i].size() > paramNames[j].size()) {
+				std::string queryParamName = query[i].substr(0, paramNames[j].size());
+				if (queryParamName == paramNames[j]) {
+					paramNameIsValid = true;
+					break;
+				}
 			}
 		}
 
 		if (!paramNameIsValid) {
-			std::cerr << "ERROR > Invalid argument: " << words[i] << "\n\n";
+			std::cerr << "ERROR > Invalid argument: " << query[i] << "\n\n";
 			return;
 		}
 	}

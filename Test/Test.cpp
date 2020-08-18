@@ -16,18 +16,18 @@ namespace Test {
 
 			//Single argument
 			command = "select r=" + rArg;
-			Assert::AreEqual(Parser::getArg("r", command), rArg);
-			Assert::AreEqual(Parser::getArg("c", command), std::string(""));
+			Assert::AreEqual(Parser::getArg("r", Parser::split(command, ' ')), rArg);
+			Assert::AreEqual(Parser::getArg("c", Parser::split(command, ' ')), std::string(""));
 
 			//Argument not provided
 			command = "select r=";
-			Assert::AreEqual(Parser::getArg("r", command), std::string(""));
-			Assert::AreEqual(Parser::getArg("c", command), std::string(""));
+			Assert::AreEqual(Parser::getArg("r", Parser::split(command, ' ')), std::string(""));
+			Assert::AreEqual(Parser::getArg("c", Parser::split(command, ' ')), std::string(""));
 
 			//Multiple arguments
 			command = "select r=" + rArg + " c=" + cArg + " e=O";
-			Assert::AreEqual(Parser::getArg("r", command), rArg);
-			Assert::AreEqual(Parser::getArg("c", command), cArg);
+			Assert::AreEqual(Parser::getArg("r", Parser::split(command, ' ')), rArg);
+			Assert::AreEqual(Parser::getArg("c", Parser::split(command, ' ')), cArg);
 		}
 	};
 }

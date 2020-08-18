@@ -26,6 +26,23 @@ PDBFile::PDBFile(const std::string &url) {
 
 		//Append residue to sequence
 		if (fileLine.substr(0, 6) == "SEQRES") {
+			//Add unique chain and chain size
+			char chain = fileLine[11];
+			bool chainAdded = false;
+			for (size_t i = 0; i < chains.size(); ++i) {
+				if (chains[i].identifier == chain) {
+					chainAdded = true;
+					break;
+				}
+			}
+			if (!chainAdded) {
+				std::string chainSizeStr = Parser::removeSpaces(fileLine.substr(13, 4));
+				std::stringstream chainSizeStream(chainSizeStr);
+				size_t chainSize;
+				chainSizeStream >> chainSize;
+				chains.push_back({ chain, chainSize });
+			}
+
 			for (unsigned int i = 19; i < 80; i += 4) {
 				if (fileLine[i] == ' ') { //Residue list ended
 					break;

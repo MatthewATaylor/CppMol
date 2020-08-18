@@ -61,9 +61,6 @@ void Model::reset() {
 		delete connectors[i];
 	}
 	connectors.clear();
-}
-void Model::delMoleculeData() {
-	delete moleculeData;
 	moleculeData = nullptr;
 }
 

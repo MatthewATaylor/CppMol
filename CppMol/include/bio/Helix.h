@@ -1,6 +1,12 @@
 #pragma once
 
-struct Helix {
+#include <string>
+
+class Helix {
+private:
+	const static std::string typeNames[10];
+
+public:
 	/*
 	1: right-handed alpha
 	2: right-handed omega
@@ -17,4 +23,6 @@ struct Helix {
 	const char chain;
 	const int residueStart;
 	const int residueEnd;
+
+	std::string getName();
 };

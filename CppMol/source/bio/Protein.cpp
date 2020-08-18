@@ -27,9 +27,9 @@ Protein::Protein(const std::vector<const AminoAcid*> &sequence) {
 	}
 }
 
-Protein::Protein(const PDBFile *pdbFile) {
-	for (size_t i = 0; i < pdbFile->sequence.size(); ++i) {
-		sequence.push_back(pdbFile->sequence[i]);
+Protein::Protein(const MoleculeData *moleculeData) {
+	for (size_t i = 0; i < moleculeData->sequence.size(); ++i) {
+		sequence.push_back(moleculeData->sequence[i]);
 	}
 }
 

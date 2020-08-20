@@ -62,10 +62,6 @@ void displayGraphics() {
 		//Handle window input
 		Input::pollInput(&window);
 
-		if (Input::keyPressed(&window, Key::ESCAPE)) {
-			window.setShouldClose(true);
-		}
-
 		camera.zoom((float)Input::getMouseScrollOffsetY());
 
 		double mouseX = Input::getMouseX();

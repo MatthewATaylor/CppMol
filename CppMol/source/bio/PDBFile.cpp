@@ -16,7 +16,7 @@ PDBFile::PDBFile(const std::string &url) {
 		return;
 	}
 
-	std::string title;
+	std::string title = "";
 
 	std::stringstream responseStream(connection.response);
 	std::string fileLine;
@@ -27,7 +27,7 @@ PDBFile::PDBFile(const std::string &url) {
 		}
 
 		if (fileLine.substr(0, 5) == "TITLE") {
-			title = Parser::removeTrailingSpaces(fileLine.substr(10, 70));
+			title += Parser::removeTrailingSpaces(fileLine.substr(10, 70));
 		}
 
 		//Append residue to sequence

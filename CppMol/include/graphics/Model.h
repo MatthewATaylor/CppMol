@@ -20,6 +20,10 @@
 #include "math/Vec.h"
 #include "math/MathUtils.h"
 
+enum class ConnectorType {
+	BACKBONE, DISULFIDE_BOND
+};
+
 class Model {
 private:
 	static unsigned int vertexArrayID;
@@ -31,9 +35,11 @@ private:
 
 	//Center (3) + radius (1) + color (3)
 	static std::vector<float> atomSpheres;
-	static std::vector<float> connectorSpheres;
+	static std::vector<float> backboneSpheres;
+	static std::vector<float> disulfideBondSpheres;
 
-	static std::vector<Connector*> connectors;
+	static std::vector<Connector*> backboneSegments;
+	static std::vector<Connector*> disulfideBonds;
 
 	static const MoleculeData *moleculeData;
 
@@ -68,7 +74,8 @@ public:
 		const Atom *atom1, const Atom *atom2,
 		float radius,
 		float r, float g, float b,
-		const Vec3 &point1, const Vec3 &point2
+		const Vec3 &point1, const Vec3 &point2,
+		ConnectorType connectorType
 	);
 
 	//Generate buffer objects for future rendering
@@ -81,7 +88,11 @@ public:
 	static void allocateSphereBuffer();
 
 	//Fill allocated sphere buffer with atom and/or connector sphere data
-	static void syncSphereBuffer(bool syncAtomSpheres, bool syncConnectorSpheres);
+	static void syncSphereBuffer(
+		bool syncAtomSpheres, 
+		bool syncBackboneSpheres,
+		bool syncDisulfideBondSpheres
+	);
 
 	//Allocate and fill buffer for all sphere data
 	static void fillSphereBuffer();
@@ -97,7 +108,8 @@ public:
 		float radius, const Selection *selection, bool reversed = false
 	);
 	static void setConnectorRadius(
-		float radius, const Selection *selection, bool reversed = false
+		float radius, const Selection *selection, ConnectorType connectorType,
+		bool reversed = false
 	);
 
 	static void rotate(const Vec3 &angleRadians);

@@ -6,8 +6,11 @@ unsigned int Model::sphereBufferID;
 Mat4 Model::modelMatrix(MathUtils::MatGen::identity<float, 4>());
 
 std::vector<float> Model::atomSpheres;
-std::vector<float> Model::connectorSpheres;
-std::vector<Connector*> Model::connectors;
+std::vector<float> Model::backboneSpheres;
+std::vector<float> Model::disulfideBondSpheres;
+
+std::vector<Connector*> Model::backboneSegments;
+std::vector<Connector*> Model::disulfideBonds;
 
 const SphereTemplate *Model::sphereTemplate = nullptr;
 const ConnectorTemplate *Model::connectorTemplate = nullptr;
@@ -56,11 +59,19 @@ bool Model::selectionIsValid(const Selection *selection) {
 
 void Model::reset() {
 	atomSpheres.clear();
-	connectorSpheres.clear();
-	for (size_t i = 0; i < connectors.size(); ++i) {
-		delete connectors[i];
+	backboneSpheres.clear();
+	disulfideBondSpheres.clear();
+
+	for (size_t i = 0; i < backboneSegments.size(); ++i) {
+		delete backboneSegments[i];
 	}
-	connectors.clear();
+	backboneSegments.clear();
+
+	for (size_t i = 0; i < disulfideBonds.size(); ++i) {
+		delete disulfideBonds[i];
+	}
+	disulfideBonds.clear();
+
 	moleculeData = nullptr;
 }
 
@@ -149,10 +160,51 @@ void Model::loadMoleculeData(const MoleculeData *moleculeData) {
 					alphaCarbons[i], alphaCarbons[i + 1],
 					ConnectorTemplate::DEFAULT_RADIUS,
 					0.39f, 0.39f, 0.39f,
-					coords1, coords2
+					coords1, coords2,
+					ConnectorType::BACKBONE
 				);
 			}
 		}
+	}
+
+	//Add disulfide bonds
+	for (size_t i = 0; i < moleculeData->disulfideBonds.size(); ++i) {
+		const Atom *atom1 = nullptr;
+		const Atom *atom2 = nullptr;
+
+		//Find sulfur atoms
+		for (size_t j = 0; j < moleculeData->atoms.size(); ++j) {
+			if (atom1 && atom2) {
+				break;
+			}
+			
+			if (!atom1 &&
+				moleculeData->atoms[j].chain == moleculeData->disulfideBonds[i].chain1 &&
+				moleculeData->atoms[j].residueNum == moleculeData->disulfideBonds[i].residue1 &&
+				moleculeData->atoms[j].element == "S") {
+
+				atom1 = &(moleculeData->atoms[j]);
+			}
+
+			if (!atom2 &&
+				moleculeData->atoms[j].chain == moleculeData->disulfideBonds[i].chain2 &&
+				moleculeData->atoms[j].residueNum == moleculeData->disulfideBonds[i].residue2 &&
+				moleculeData->atoms[j].element == "S") {
+
+				atom2 = &(moleculeData->atoms[j]);
+			}
+		}
+
+		Vec3 coords1 = atom1->coords * coordScale - coordAverages;
+		Vec3 coords2 = atom2->coords * coordScale - coordAverages;
+
+		addConnector(
+			atom1, atom2,
+			ConnectorTemplate::DEFAULT_RADIUS,
+			1.0f, 1.0f, 0.0f,
+			coords1, coords2,
+			ConnectorType::DISULFIDE_BOND
+		);
 	}
 
 	fillSphereBuffer();
@@ -162,15 +214,29 @@ void Model::loadMoleculeData(const MoleculeData *moleculeData) {
 void Model::addAtom(const Vec3 &center, float radius, float r, float g, float b) {
 	addSphere(center, radius, r, g, b, &atomSpheres);
 }
+
 void Model::addConnector(
 	const Atom *atom1, const Atom *atom2,
 	float radius,
 	float r, float g, float b,
-	const Vec3 &point1, const Vec3 &point2
+	const Vec3 &point1, const Vec3 &point2,
+	ConnectorType connectorType
 ) {
-	connectors.push_back(new Connector(atom1, atom2, radius, r, g, b, point1, point2));
-	addSphere(point1, radius, r, g, b, &connectorSpheres);
-	addSphere(point2, radius, r, g, b, &connectorSpheres);
+	std::vector<Connector*> *connectors = nullptr;
+	std::vector<float> *spheres = nullptr;
+
+	if (connectorType == ConnectorType::BACKBONE) {
+		connectors = &backboneSegments;
+		spheres = &backboneSpheres;
+	}
+	else {
+		connectors = &disulfideBonds;
+		spheres = &disulfideBondSpheres;
+	}
+
+	connectors->push_back(new Connector(atom1, atom2, radius, r, g, b, point1, point2));
+	addSphere(point1, radius, r, g, b, spheres);
+	addSphere(point2, radius, r, g, b, spheres);
 }
 
 void Model::genBuffers() {
@@ -198,8 +264,10 @@ void Model::fillSphereTemplateBuffer() {
 
 void Model::allocateSphereBuffer() {
 	const size_t ATOM_SPHERES_SIZE = sizeof(float) * atomSpheres.size();
-	const size_t CONNECTOR_SPHERES_SIZE = sizeof(float) * connectorSpheres.size();
-	const size_t SPHERES_SIZE = ATOM_SPHERES_SIZE + CONNECTOR_SPHERES_SIZE;
+	const size_t BACKBONE_SPHERES_SIZE = sizeof(float) * backboneSpheres.size();
+	const size_t DISULFIDE_BOND_SPHERES_SIZE = sizeof(float) * disulfideBondSpheres.size();
+	const size_t SPHERES_SIZE = 
+		ATOM_SPHERES_SIZE + BACKBONE_SPHERES_SIZE + DISULFIDE_BOND_SPHERES_SIZE;
 
 	glBindVertexArray(vertexArrayID);
 	glBindBuffer(GL_ARRAY_BUFFER, sphereBufferID);
@@ -208,9 +276,14 @@ void Model::allocateSphereBuffer() {
 	setSphereBufferAttributes();
 }
 
-void Model::syncSphereBuffer(bool syncAtomSpheres, bool syncConnectorSpheres) {
+void Model::syncSphereBuffer(
+	bool syncAtomSpheres, 
+	bool syncBackboneSpheres,
+	bool syncDisulfideBondSpheres
+) {
 	const size_t ATOM_SPHERES_SIZE = sizeof(float) * atomSpheres.size();
-	const size_t CONNECTOR_SPHERES_SIZE = sizeof(float) * connectorSpheres.size();
+	const size_t BACKBONE_SPHERES_SIZE = sizeof(float) * backboneSpheres.size();
+	const size_t DISULFIDE_BOND_SPHERES_SIZE = sizeof(float) * disulfideBondSpheres.size();
 
 	glBindVertexArray(vertexArrayID);
 	glBindBuffer(GL_ARRAY_BUFFER, sphereBufferID);
@@ -224,20 +297,31 @@ void Model::syncSphereBuffer(bool syncAtomSpheres, bool syncConnectorSpheres) {
 		);
 	}
 
-	if (syncConnectorSpheres) {
+	if (syncBackboneSpheres) {
 		glBufferSubData(
 			GL_ARRAY_BUFFER,
 			ATOM_SPHERES_SIZE,
-			CONNECTOR_SPHERES_SIZE,
-			connectorSpheres.data()
+			BACKBONE_SPHERES_SIZE,
+			backboneSpheres.data()
+		);
+	}
+
+	if (syncDisulfideBondSpheres) {
+		glBufferSubData(
+			GL_ARRAY_BUFFER,
+			ATOM_SPHERES_SIZE + BACKBONE_SPHERES_SIZE,
+			DISULFIDE_BOND_SPHERES_SIZE,
+			disulfideBondSpheres.data()
 		);
 	}
 }
 
 void Model::fillSphereBuffer() {
 	const size_t ATOM_SPHERES_SIZE = sizeof(float) * atomSpheres.size();
-	const size_t CONNECTOR_SPHERES_SIZE = sizeof(float) * connectorSpheres.size();
-	const size_t SPHERES_SIZE = ATOM_SPHERES_SIZE + CONNECTOR_SPHERES_SIZE;
+	const size_t BACKBONE_SPHERES_SIZE = sizeof(float) * backboneSpheres.size();
+	const size_t DISULFIDE_BOND_SPHERES_SIZE = sizeof(float) * disulfideBondSpheres.size();
+	const size_t SPHERES_SIZE = 
+		ATOM_SPHERES_SIZE + BACKBONE_SPHERES_SIZE + DISULFIDE_BOND_SPHERES_SIZE;
 
 	glBindVertexArray(vertexArrayID);
 	glBindBuffer(GL_ARRAY_BUFFER, sphereBufferID);
@@ -253,12 +337,20 @@ void Model::fillSphereBuffer() {
 		atomSpheres.data()
 	);
 
-	//Connector spheres
+	//Backbone spheres
 	glBufferSubData(
 		GL_ARRAY_BUFFER,
 		ATOM_SPHERES_SIZE,
-		CONNECTOR_SPHERES_SIZE,
-		connectorSpheres.data()
+		BACKBONE_SPHERES_SIZE,
+		backboneSpheres.data()
+	);
+
+	//Disulfide bond spheres
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		ATOM_SPHERES_SIZE + BACKBONE_SPHERES_SIZE,
+		DISULFIDE_BOND_SPHERES_SIZE,
+		disulfideBondSpheres.data()
 	);
 }
 
@@ -289,7 +381,9 @@ void Model::render(
 		GL_TRIANGLES,
 		0,
 		GLsizei(SphereTemplate::NUM_VERTICES / 3),
-		GLsizei((atomSpheres.size() + connectorSpheres.size()) / 7)
+		GLsizei(
+			(atomSpheres.size() + backboneSpheres.size() + disulfideBondSpheres.size()) / 7
+		)
 	);
 
 	//Draw connectors
@@ -308,9 +402,12 @@ void Model::render(
 	connectorShader->setViewMatrix(viewMatrix);
 	connectorShader->setProjectionMatrix(projectionMatrix);
 
-	for(size_t i = 0; i < connectors.size(); ++i) {
-		//Set connector's model and normal matrices, set shader's color, draw arrays
-		connectors[i]->render(connectorShader, modelMatrix, connectorTemplate);
+	//Set connector model and normal matrices, set shader's color, draw arrays
+	for(size_t i = 0; i < backboneSegments.size(); ++i) {
+		backboneSegments[i]->render(connectorShader, modelMatrix, connectorTemplate);
+	}
+	for (size_t i = 0; i < disulfideBonds.size(); ++i) {
+		disulfideBonds[i]->render(connectorShader, modelMatrix, connectorTemplate);
 	}
 }
 
@@ -323,16 +420,36 @@ void Model::setAtomRadius(float radius, const Selection *selection, bool reverse
 			atomSpheres[i] = radius;
 		}
 	}
-	syncSphereBuffer(true, false);
+	syncSphereBuffer(true, false, false);
 }
-void Model::setConnectorRadius(float radius, const Selection *selection, bool reversed) {
-	for (size_t i = 0; i < connectors.size(); ++i) {
-		bool atom1IsMatch = selection->isMatch(connectors[i]->atom1, reversed);
-		bool atom2IsMatch = selection->isMatch(connectors[i]->atom2, reversed);
+void Model::setConnectorRadius(
+	float radius, const Selection *selection, ConnectorType connectorType,
+	bool reversed
+) {
+	std::vector<Connector*> *connectors = nullptr;
+	std::vector<float> *spheres = nullptr;
+	
+	bool syncBackboneSpheres = false;
+	bool syncDisulfideBondSpheres = false;
+
+	if (connectorType == ConnectorType::BACKBONE) {
+		connectors = &backboneSegments;
+		spheres = &backboneSpheres;
+		syncBackboneSpheres = true;
+	}
+	else {
+		connectors = &disulfideBonds;
+		spheres = &disulfideBondSpheres;
+		syncDisulfideBondSpheres = true;
+	}
+
+	for (size_t i = 0; i < connectors->size(); ++i) {
+		bool atom1IsMatch = selection->isMatch((*connectors)[i]->atom1, reversed);
+		bool atom2IsMatch = selection->isMatch((*connectors)[i]->atom2, reversed);
 		if ((!reversed &&  atom1IsMatch && atom2IsMatch) ||
 			(reversed && (atom1IsMatch || atom2IsMatch))) {
 
-			connectors[i]->setRadius(radius);
+			(*connectors)[i]->setRadius(radius);
 
 			//Set radius of connector spheres
 			size_t sphereIndex1 = i * 2;
@@ -341,11 +458,11 @@ void Model::setConnectorRadius(float radius, const Selection *selection, bool re
 			size_t sphereRadiusIndex1 = sphereIndex1 * 7 + 3;
 			size_t sphereRadiusIndex2 = sphereIndex2 * 7 + 3;
 
-			connectorSpheres[sphereRadiusIndex1] = radius;
-			connectorSpheres[sphereRadiusIndex2] = radius;
+			(*spheres)[sphereRadiusIndex1] = radius;
+			(*spheres)[sphereRadiusIndex2] = radius;
 		}
 	}
-	syncSphereBuffer(false, true);
+	syncSphereBuffer(false, syncBackboneSpheres, syncDisulfideBondSpheres);
 }
 
 void Model::rotate(const Vec3 &angleRadians) {

@@ -131,7 +131,16 @@ void displayGraphics() {
 			else if (commandWords.size() == 1 && commandWords[0] == "reset") {
 				selection.reset();
 				Model::setAtomRadius(SphereTemplate::DEFAULT_RADIUS, &selection);
-				Model::setConnectorRadius(SphereTemplate::DEFAULT_RADIUS, &selection);
+				Model::setConnectorRadius(
+					ConnectorTemplate::DEFAULT_RADIUS, 
+					&selection,
+					ConnectorType::BACKBONE
+				);
+				Model::setConnectorRadius(
+					ConnectorTemplate::DEFAULT_RADIUS,
+					&selection,
+					ConnectorType::DISULFIDE_BOND
+				);
 			}
 			else if (commandWords.size() == 2 && commandWords[0] == "print") {
 				const char *noMoleculeDataError = "ERROR > No molecule data loaded\n\n";
@@ -221,7 +230,8 @@ void displayGraphics() {
 
 					//Hide all renderables but those in selection
 					Model::setAtomRadius(0.0f, &selection, true);
-					Model::setConnectorRadius(0.0f, &selection, true);
+					Model::setConnectorRadius(0.0f, &selection, ConnectorType::BACKBONE, true);
+					Model::setConnectorRadius(0.0f, &selection, ConnectorType::DISULFIDE_BOND, true);
 				}
 			}
 			else if (commandWords.size() == 2 && commandWords[0] == "atom") {
@@ -248,7 +258,11 @@ void displayGraphics() {
 			else if (commandWords.size() == 2 && commandWords[0] == "backbone") {
 				std::string radiusStr = commandWords[1];
 				if (radiusStr == "default") {
-					Model::setConnectorRadius(ConnectorTemplate::DEFAULT_RADIUS, &selection);
+					Model::setConnectorRadius(
+						ConnectorTemplate::DEFAULT_RADIUS,
+						&selection,
+						ConnectorType::BACKBONE
+					);
 				}
 				else {
 					try {
@@ -259,7 +273,9 @@ void displayGraphics() {
 						else if (radius < 0) {
 							radius = 0;
 						}
-						Model::setConnectorRadius(radius / 1000.0f, &selection);
+						Model::setConnectorRadius(
+							radius / 1000.0f, &selection, ConnectorType::BACKBONE
+						);
 					}
 					catch (...) {
 						std::cerr << "ERROR > Invalid size argument\n\n";

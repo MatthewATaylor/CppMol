@@ -139,10 +139,13 @@ void displayGraphics() {
 					ConnectorType::BACKBONE
 				);
 				Model::setConnectorRadius(
-					ConnectorTemplate::DEFAULT_RADIUS,
+					0.0f,
 					&selection,
 					ConnectorType::DISULFIDE_BOND
 				);
+				Model::colorAtomsDefault(&selection);
+				Model::colorConnectorsDefault(&selection, ConnectorType::BACKBONE);
+				Model::colorConnectorsDefault(&selection, ConnectorType::DISULFIDE_BOND);
 			}
 			else if (commandWords.size() == 2 && commandWords[0] == "print") {
 				const char *noMoleculeDataError = "ERROR > No molecule data loaded\n\n";

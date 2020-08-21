@@ -155,6 +155,7 @@ R"(#version 330 core
 
 layout(location = 0) in vec3 vertexPos;
 layout(location = 1) in vec3 vertexNormal;
+layout(location = 2) in float posIndicator;
 
 out vec3 fragmentPos;
 out vec3 fragmentNormal;
@@ -173,7 +174,7 @@ void main() {
 
 	fragmentPos = vec3(worldPos);
 	fragmentNormal = normalMat * vertexNormal;
-	fragmentColor = color;
+	fragmentColor = color * posIndicator + vec3(1.0f, 1.0f, 1.0f) * (1.0f - posIndicator);
 }
 )";
 	std::string connectorFragmentShader =

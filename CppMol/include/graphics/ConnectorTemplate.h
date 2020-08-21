@@ -13,11 +13,10 @@ private:
 	static const float HEIGHT;
 
 public:
-	//Size of position and normal arrays
-	static const unsigned int NUM_VERTICES = 36 * NUM_PANELS;
+	//3 position vertices + 3 normal vertices + 1 side indicator
+	static const unsigned int VERTICES_PER_POINT = 7;
 
-	//3 position vertices + 3 normal vertices
-	static const unsigned int VERTICES_PER_POINT = 6;
+	static const unsigned int NUM_VERTICES = 2 * 3 * VERTICES_PER_POINT * NUM_PANELS * 2;
 
 	static const float DEFAULT_RADIUS;
 
@@ -29,8 +28,8 @@ private:
 	float vertices[NUM_VERTICES];
 	size_t verticesIndex = 0;
 
-	//Add points to positions array
-	void addVertexPoint(const Vec3 &point, const Vec3 &normal);
+	//Add points to vertices array
+	void addVertexPoint(const Vec3 &point, const Vec3 &normal, bool isTop);
 
 	void genCylinderVertices();
 

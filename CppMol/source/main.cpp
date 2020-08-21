@@ -4,6 +4,7 @@
 #include <thread>
 #include <utility>
 #include <optional>
+#include <stdexcept>
 
 #include "ResourceManager.h"
 #include "Input.h"
@@ -15,6 +16,7 @@
 #include "math/Vec.h"
 #include "math/Mat.h"
 #include "math/MathUtils.h"
+#include "graphics/Color.h"
 #include "graphics/Window.h"
 #include "graphics/Shader.h"
 #include "graphics/SphereTemplate.h"
@@ -100,7 +102,7 @@ void displayGraphics() {
 
 		//Read commands sent from console
 		for (size_t i = 0; i < commands.size(); ++i) {
-			std::vector<std::string> commandWords = 
+			std::vector<std::string> commandWords =
 				Parser::split(Parser::lowercase(commands[0]), ' ');
 			if (commandWords.size() == 3 && commandWords[0] == "load") {
 				if (commandWords[1] == "pdb") {
@@ -114,7 +116,7 @@ void displayGraphics() {
 					else {
 						url = commandWords[2];
 					}
-					
+
 					moleculeData = new PDBFile(url);
 					Model::loadMoleculeData(moleculeData);
 					selection.reset();
@@ -132,7 +134,7 @@ void displayGraphics() {
 				selection.reset();
 				Model::setAtomRadius(SphereTemplate::DEFAULT_RADIUS, &selection);
 				Model::setConnectorRadius(
-					ConnectorTemplate::DEFAULT_RADIUS, 
+					ConnectorTemplate::DEFAULT_RADIUS,
 					&selection,
 					ConnectorType::BACKBONE
 				);
@@ -255,13 +257,17 @@ void displayGraphics() {
 					}
 				}
 			}
-			else if (commandWords.size() == 2 && commandWords[0] == "backbone") {
+			else if (commandWords.size() == 2 && (commandWords[0] == "backbone" || commandWords[0] == "ssbond")) {
+				ConnectorType connectorType = commandWords[0] == "backbone" ?
+					ConnectorType::BACKBONE :
+					ConnectorType::DISULFIDE_BOND;
+
 				std::string radiusStr = commandWords[1];
 				if (radiusStr == "default") {
 					Model::setConnectorRadius(
 						ConnectorTemplate::DEFAULT_RADIUS,
 						&selection,
-						ConnectorType::BACKBONE
+						connectorType
 					);
 				}
 				else {
@@ -274,13 +280,112 @@ void displayGraphics() {
 							radius = 0;
 						}
 						Model::setConnectorRadius(
-							radius / 1000.0f, &selection, ConnectorType::BACKBONE
+							radius / 1000.0f, &selection, connectorType
 						);
 					}
 					catch (...) {
 						std::cerr << "ERROR > Invalid size argument\n\n";
 					}
 				}
+			}
+			else if (commandWords.size() >= 2 && commandWords[0] == "color") {
+				if (commandWords[1] == "atom") {
+					if (commandWords.size() == 5) {
+						int r, g, b;
+						std::string rStr = commandWords[2];
+						std::string gStr = commandWords[3];
+						std::string bStr = commandWords[4];
+						try {
+							r = std::stoi(rStr);
+							g = std::stoi(gStr);
+							b = std::stoi(bStr);
+
+							if (r > 255 || r < 0 || g > 255 || g < 0 || b > 255 || b < 0) {
+								throw std::exception();
+							}
+
+							Color color = Color::fromByte(
+								(unsigned char)r, (unsigned char)g, (unsigned char)b
+							);
+							Model::setAtomColor(&color, &selection);
+						}
+						catch (...) {
+							std::cerr << "ERROR > Invalid color argument: " <<
+								"color values must be numbers between 0 and 255\n\n";
+						}
+					}
+					else if (commandWords.size() == 3) {
+						if (commandWords[2] == "default") {
+							Model::colorAtomsDefault(&selection);
+						}
+						else if (commandWords[2] == "structure") {
+							Model::colorAtomsByStructure(&selection);
+						}
+						else if (commandWords[2] == "chain") {
+							Model::colorAtomsByChain(&selection);
+						}
+						else {
+							try {
+								Color color = Color::fromName(commandWords[2]);
+								Model::setAtomColor(&color, &selection);
+							}
+							catch (...) {
+								std::cerr << "ERROR > Invalid color argument\n\n";
+							}
+						}
+					}
+				}
+				else if (commandWords[1] == "backbone" || commandWords[1] == "ssbond") {
+					ConnectorType connectorType = commandWords[1] == "backbone" ?
+						ConnectorType::BACKBONE :
+						ConnectorType::DISULFIDE_BOND;
+
+					if (commandWords.size() == 5) {
+						int r, g, b;
+						std::string rStr = commandWords[2];
+						std::string gStr = commandWords[3];
+						std::string bStr = commandWords[4];
+						try {
+							r = std::stoi(rStr);
+							g = std::stoi(gStr);
+							b = std::stoi(bStr);
+
+							if (r > 255 || r < 0 || g > 255 || g < 0 || b > 255 || b < 0) {
+								throw std::exception();
+							}
+
+							Color color = Color::fromByte(
+								(unsigned char)r, (unsigned char)g, (unsigned char)b
+							);
+							Model::setConnectorColor(&color, &selection, connectorType);
+						}
+						catch (...) {
+							std::cerr << "ERROR > Invalid color argument: " <<
+								"color values must be numbers between 0 and 255\n\n";
+						}
+					}
+					else if (commandWords.size() == 3) {
+						if (commandWords[2] == "default") {
+							Model::colorConnectorsDefault(&selection, connectorType);
+						}
+						else if (commandWords[2] == "structure") {
+							Model::colorConnectorsByStructure(&selection, connectorType);
+						}
+						else if (commandWords[2] == "chain") {
+							Model::colorConnectorsByChain(&selection, connectorType);
+						}
+						else {
+							try {
+								Color color = Color::fromName(commandWords[2]);
+								Model::setConnectorColor(&color, &selection, connectorType);
+							}
+							catch (...) {
+								std::cerr << "ERROR > Invalid color argument\n\n";
+							}
+						}
+					}
+				}
+				//TODO: add invalid command message for bad color command
 			}
 			else {
 				std::cerr << "ERROR > Invalid command\n\n";

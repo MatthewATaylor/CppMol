@@ -6,6 +6,7 @@
 
 #include "ConnectorTemplate.h"
 #include "Shader.h"
+#include "Color.h"
 #include "bio/Atom.h"
 #include "math/Vec.h"
 #include "math/Mat.h"
@@ -14,7 +15,7 @@
 class Connector {
 private:
 	float radius;
-	float r, g, b;
+	Color color;
 
 	float length;
 
@@ -28,7 +29,7 @@ public:
 
 	Connector(
 		const Atom *atom1, const Atom *atom2,
-		float radius, float r, float g, float b,
+		float radius, const Color *color,
 		const Vec3 &point1, const Vec3 &point2
 	);
 
@@ -39,4 +40,5 @@ public:
 	);
 
 	void setRadius(float radius);
+	void setColor(const Color *color);
 };

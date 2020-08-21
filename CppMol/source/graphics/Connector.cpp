@@ -2,11 +2,11 @@
 
 Connector::Connector(
 	const Atom *atom1, const Atom *atom2,
-	float radius, float r, float g, float b,
+	float radius, const Color *color,
 	const Vec3 &point1, const Vec3 &point2) :
 
 	atom1(atom1), atom2(atom2),
-	radius(radius), r(r), g(g), b(b) {
+	radius(radius), color(*color) {
 
 	length = std::sqrt(
 		(point1.getX() - point2.getX()) * (point1.getX() - point2.getX()) +
@@ -43,7 +43,7 @@ void Connector::render(
 	shader->setModelMatrix(modelMatrix);
 	shader->setNormalMatrix(MathUtils::MatGen::normal<float>(modelMatrix));
 	
-	shader->setVec3("color", r, g, b);
+	shader->setVec3("color", color.r, color.g, color.b);
 
 	glDrawArrays(
 		GL_TRIANGLES,
@@ -57,4 +57,8 @@ void Connector::render(
 void Connector::setRadius(float radius) {
 	this->radius = radius;
 	scaleMatrix = MathUtils::MatGen::scale<float, 4>(Vec3(radius, length, radius));
+}
+
+void Connector::setColor(const Color *color) {
+	this->color = *color;
 }

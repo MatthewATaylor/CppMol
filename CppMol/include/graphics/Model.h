@@ -2,9 +2,12 @@
 
 #include <vector>
 #include <cctype>
+#include <functional>
+#include <utility>
 
 #include <GL/glew.h>
 
+#include "Color.h"
 #include "SphereTemplate.h"
 #include "Shader.h"
 #include "Window.h"
@@ -50,11 +53,21 @@ private:
 	static void addSphere(
 		const Vec3 &center,
 		float radius,
-		float r, float g, float b,
+		const Color *color,
 		std::vector<float> *vec
 	);
 
 	static bool selectionIsValid(const Selection *selection);
+	
+	static void colorAtomsByFunc(
+		std::function<Color(const Atom*)> func,
+		const Selection *selection
+	);
+	static void colorConnectorsByFunc(
+		std::function<Color(const Connector*)> func,
+		const Selection *selection,
+		ConnectorType connectorType
+	);
 
 public:
 	static void reset();
@@ -68,12 +81,12 @@ public:
 	static void addAtom(
 		const Vec3 &center,
 		float radius,
-		float r, float g, float b
+		const Color *color
 	);
 	static void addConnector(
 		const Atom *atom1, const Atom *atom2,
 		float radius,
-		float r, float g, float b,
+		const Color *color,
 		const Vec3 &point1, const Vec3 &point2,
 		ConnectorType connectorType
 	);
@@ -89,7 +102,7 @@ public:
 
 	//Fill allocated sphere buffer with atom and/or connector sphere data
 	static void syncSphereBuffer(
-		bool syncAtomSpheres, 
+		bool syncAtomSpheres,
 		bool syncBackboneSpheres,
 		bool syncDisulfideBondSpheres
 	);
@@ -100,7 +113,7 @@ public:
 	static void render(
 		const Shader *shader,
 		const Shader *connectorShader,
-		const Window *window, 
+		const Window *window,
 		const Camera *camera
 	);
 
@@ -110,6 +123,25 @@ public:
 	static void setConnectorRadius(
 		float radius, const Selection *selection, ConnectorType connectorType,
 		bool reversed = false
+	);
+
+	static void setAtomColor(const Color *color, const Selection *selection);
+	static void colorAtomsDefault(const Selection *selection);
+	static void colorAtomsByStructure(const Selection *selection);
+	static void colorAtomsByChain(const Selection *selection);
+
+	static void setConnectorColor(
+		const Color *color, const Selection *selection,
+		ConnectorType connectorType
+	);
+	static void colorConnectorsDefault(
+		const Selection *selection, ConnectorType connectorType
+	);
+	static void colorConnectorsByStructure(
+		const Selection *selection, ConnectorType connectorType
+	);
+	static void colorConnectorsByChain(
+		const Selection *selection, ConnectorType connectorType
 	);
 
 	static void rotate(const Vec3 &angleRadians);

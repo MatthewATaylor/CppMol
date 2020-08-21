@@ -240,16 +240,18 @@ void Model::loadMoleculeData(const MoleculeData *moleculeData) {
 			}
 		}
 
-		Vec3 coords1 = atom1->coords * coordScale - coordAverages;
-		Vec3 coords2 = atom2->coords * coordScale - coordAverages;
-		Color color = Color::fromElement("S");
+		if (atom1 && atom2) {
+			Vec3 coords1 = atom1->coords * coordScale - coordAverages;
+			Vec3 coords2 = atom2->coords * coordScale - coordAverages;
+			Color color = Color::fromElement("S");
 
-		addConnector(
-			atom1, atom2,
-			0.0f, //Invisible by default
-			&color, coords1, coords2,
-			ConnectorType::DISULFIDE_BOND
-		);
+			addConnector(
+				atom1, atom2,
+				0.0f, //Invisible by default
+				&color, coords1, coords2,
+				ConnectorType::DISULFIDE_BOND
+			);
+		}
 	}
 
 	fillSphereBuffer();
@@ -299,6 +301,7 @@ void Model::genBuffers() {
 void Model::fillSphereTemplateBuffer() {
 	if (!sphereTemplate) {
 		std::cerr << "ERROR > Sphere template not set\n\n";
+		return;
 	}
 
 	const size_t TEMPLATE_SIZE = sizeof(float) * SphereTemplate::NUM_VERTICES;

@@ -38,8 +38,8 @@ void SphereTemplate::genVertices() {
 			//Top left triangle
 			if (i != 0) {
 				Vec3 point1 = points[i][j]; //Top left
-				Vec3 point2 = points[i + 1][j]; //Bottom left
-				Vec3 point3 = points[i][j + 1]; //Top right
+				Vec3 point2 = points[i + (size_t)1][j]; //Bottom left
+				Vec3 point3 = points[i][j + (size_t)1]; //Top right
 
 				addVertexPoint(point1);
 				addVertexPoint(point2);
@@ -48,9 +48,9 @@ void SphereTemplate::genVertices() {
 
 			//Bottom right triangle
 			if (i != NUM_STACKS - 1) {
-				Vec3 point1 = points[i][j + 1]; //Top right
-				Vec3 point2 = points[i + 1][j]; //Bottom left
-				Vec3 point3 = points[i + 1][j + 1]; //Bottom right
+				Vec3 point1 = points[i][j + (size_t)1]; //Top right
+				Vec3 point2 = points[i + (size_t)1][j]; //Bottom left
+				Vec3 point3 = points[i + (size_t)1][j + (size_t)1]; //Bottom right
 
 				addVertexPoint(point1);
 				addVertexPoint(point2);

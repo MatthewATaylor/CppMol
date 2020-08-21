@@ -9,11 +9,13 @@ std::string Parser::removeSpaces(std::string str) {
 }
 
 std::string Parser::removeTrailingSpaces(std::string str) {
-	for (size_t i = str.size() - 1; i >= 0; --i) {
-		if (str[i] != ' ') {
-			break;
+	if (str.size() > 0) {
+		for (size_t i = str.size() - 1; i != static_cast<unsigned>(-1); --i) {
+			if (str[i] != ' ') {
+				break;
+			}
+			str.erase(str.begin() + i);
 		}
-		str.erase(str.begin() + i);
 	}
 	return str;
 }

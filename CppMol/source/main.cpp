@@ -10,9 +10,11 @@
 #include "Input.h"
 #include "Selection.h"
 #include "Parser.h"
+#include "ColorCommand.h"
 #include "bio/Protein.h"
 #include "bio/PDBFile.h"
 #include "bio/MoleculeData.h"
+#include "bio/ConnectorType.h"
 #include "math/Vec.h"
 #include "math/Mat.h"
 #include "math/MathUtils.h"
@@ -104,6 +106,7 @@ void displayGraphics() {
 		for (size_t i = 0; i < commands.size(); ++i) {
 			std::vector<std::string> commandWords =
 				Parser::split(Parser::lowercase(commands[0]), ' ');
+
 			if (commandWords.size() == 3 && commandWords[0] == "load") {
 				if (commandWords[1] == "pdb") {
 					delete moleculeData;
@@ -291,119 +294,14 @@ void displayGraphics() {
 					}
 				}
 			}
-			else if (commandWords.size() >= 2 && commandWords[0] == "color") {
-				bool colorCommandIsValid = true;
-				if (commandWords[1] == "atom") {
-					//RGB values provided
-					if (commandWords.size() == 5) {
-						int r, g, b;
-						std::string rStr = commandWords[2];
-						std::string gStr = commandWords[3];
-						std::string bStr = commandWords[4];
-						try {
-							r = std::stoi(rStr);
-							g = std::stoi(gStr);
-							b = std::stoi(bStr);
-
-							if (r > 255 || r < 0 || g > 255 || g < 0 || b > 255 || b < 0) {
-								throw std::exception();
-							}
-
-							Color color = Color::fromByte(
-								(unsigned char)r, (unsigned char)g, (unsigned char)b
-							);
-							Model::setAtomColor(&color, &selection);
-						}
-						catch (...) {
-							std::cerr << "ERROR > Invalid color argument: " <<
-								"color values must be numbers between 0 and 255\n\n";
-							colorCommandIsValid = false;
-						}
-					}
-					else if (commandWords.size() == 3) {
-						if (commandWords[2] == "default") {
-							Model::colorAtomsDefault(&selection);
-						}
-						else if (commandWords[2] == "structure") {
-							Model::colorAtomsByStructure(&selection);
-						}
-						else {
-							try {
-								Color color = Color::fromName(commandWords[2]);
-								Model::setAtomColor(&color, &selection);
-							}
-							catch (...) {
-								std::cerr << "ERROR > Invalid color argument\n\n";
-								colorCommandIsValid = false;
-							}
-						}
-					}
-					else {
-						colorCommandIsValid = false;
-					}
-				}
-				else if (commandWords[1] == "backbone" || commandWords[1] == "ssbond") {
-					ConnectorType connectorType = commandWords[1] == "backbone" ?
-						ConnectorType::BACKBONE :
-						ConnectorType::DISULFIDE_BOND;
-
-					if (commandWords.size() == 5) {
-						int r, g, b;
-						std::string rStr = commandWords[2];
-						std::string gStr = commandWords[3];
-						std::string bStr = commandWords[4];
-						try {
-							r = std::stoi(rStr);
-							g = std::stoi(gStr);
-							b = std::stoi(bStr);
-
-							if (r > 255 || r < 0 || g > 255 || g < 0 || b > 255 || b < 0) {
-								throw std::exception();
-							}
-
-							Color color = Color::fromByte(
-								(unsigned char)r, (unsigned char)g, (unsigned char)b
-							);
-							Model::setConnectorColor(&color, &selection, connectorType);
-						}
-						catch (...) {
-							std::cerr << "ERROR > Invalid color argument: " <<
-								"color values must be numbers between 0 and 255\n\n";
-							colorCommandIsValid = false;
-						}
-					}
-					else if (commandWords.size() == 3) {
-						if (commandWords[2] == "default") {
-							Model::colorConnectorsDefault(&selection, connectorType);
-						}
-						else if (commandWords[2] == "structure") {
-							Model::colorConnectorsByStructure(&selection, connectorType);
-						}
-						else {
-							try {
-								Color color = Color::fromName(commandWords[2]);
-								Model::setConnectorColor(&color, &selection, connectorType);
-							}
-							catch (...) {
-								std::cerr << "ERROR > Invalid color argument\n\n";
-								colorCommandIsValid = false;
-							}
-						}
-					}
-					else {
-						colorCommandIsValid = false;
-					}
-				}
-				else {
-					colorCommandIsValid = false;
-				}
-				if (!colorCommandIsValid) {
-					std::cerr << "ERROR > Invalid command\n\n";
-				}
+			else if (commandWords.size() > 1 && commandWords[0] == "color") {
+				ColorCommand colorCommand(&commandWords, &selection);
+				colorCommand.execute();
 			}
 			else {
 				std::cerr << "ERROR > Invalid command\n\n";
 			}
+
 			commands.erase(commands.begin());
 		}
 

@@ -20,13 +20,10 @@
 #include "Parser.h"
 #include "bio/MoleculeData.h"
 #include "bio/Atom.h"
+#include "bio/ConnectorType.h"
 #include "math/Mat.h"
 #include "math/Vec.h"
 #include "math/MathUtils.h"
-
-enum class ConnectorType {
-	BACKBONE, DISULFIDE_BOND
-};
 
 class Model {
 private:

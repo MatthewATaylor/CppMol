@@ -24,6 +24,7 @@
     <ClCompile Include="source\bio\MoleculeData.cpp" />
     <ClCompile Include="source\Camera.cpp" />
     <ClCompile Include="source\Clock.cpp" />
+    <ClCompile Include="source\ColorCommand.cpp" />
     <ClCompile Include="source\graphics\Color.cpp" />
     <ClCompile Include="source\graphics\Connector.cpp" />
     <ClCompile Include="source\graphics\ConnectorTemplate.cpp" />
@@ -45,11 +46,13 @@
     <ClInclude Include="include\bio\AminoAcid.h" />
     <ClInclude Include="include\bio\Atom.h" />
     <ClInclude Include="include\bio\Chain.h" />
+    <ClInclude Include="include\bio\ConnectorType.h" />
     <ClInclude Include="include\bio\Residue.h" />
     <ClInclude Include="include\bio\MoleculeData.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\Clock.h" />
     <ClInclude Include="include\bio\DisulfideBond.h" />
+    <ClInclude Include="include\ColorCommand.h" />
     <ClInclude Include="include\graphics\Color.h" />
     <ClInclude Include="include\graphics\Connector.h" />
     <ClInclude Include="include\graphics\ConnectorTemplate.h" />

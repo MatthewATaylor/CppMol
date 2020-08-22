@@ -6,6 +6,8 @@ const Color Color::HELIX_COLOR_PI(0.38f, 0.0f, 0.5f);
 const Color Color::HELIX_COLOR_UNDEFINED(0.7f, 0.7f, 0.7f);
 const Color Color::SHEET_COLOR(1.0f, 0.78f, 0.0f);
 
+Color::Color() {}
+
 Color::Color(float r, float g, float b) :
 	r(r), g(g), b(b) {}
 
@@ -70,7 +72,7 @@ Color Color::fromElement(const std::string &element) {
 		return Color(1.0f, 1.0f, 0.0f);
 	}
 
-	throw std::invalid_argument("Unknown color for element: " + element);
+	throw std::invalid_argument("ERROR > Unknown color for element: " + element);
 }
 
 Color Color::fromStructure(const Atom *atom, const MoleculeData *moleculeData) {
@@ -109,67 +111,6 @@ Color Color::fromStructure(const Atom *atom, const MoleculeData *moleculeData) {
 		}
 	}
 
-	return Color(1.0f, 1.0f, 1.0f);
-}
-
-Color Color::fromConnectorStructure(
-	const Atom *atom1, const Atom *atom2, const MoleculeData *moleculeData
-) {
-	/*
-	//Atoms can have up to 2 different helix types
-	int atom1HelixTypes[] = { -1, -1 };
-	int atom2HelixTypes[] = { -1, -1 };
-
-	std::pair<const Atom*, int*> atomsToHelixTypes[] = {
-		std::make_pair(atom1, atom1HelixTypes),
-		std::make_pair(atom2, atom2HelixTypes)
-	};
-
-	//Get atom helix types
-	for (size_t i = 0; i < moleculeData->helices.size(); ++i) {
-		for (unsigned int j = 0; j < 2; ++j) {
-			if (atomsToHelixTypes[j].first->chain == moleculeData->helices[i].chain &&
-				atomsToHelixTypes[j].first->residueNum >= moleculeData->helices[i].residueStart &&
-				atomsToHelixTypes[j].first->residueNum <= moleculeData->helices[i].residueEnd) {
-
-				if (atomsToHelixTypes[j].second[0] == -1) {
-					atomsToHelixTypes[j].second[0] = moleculeData->helices[i].type;
-				}
-				else {
-					atomsToHelixTypes[j].second[1] = moleculeData->helices[i].type;
-				}
-			}
-		}
-	}
-
-	//Check if atoms are in a sheet
-	bool atom1InSheet = false;
-	bool atom2InSheet = false;
-
-	for (size_t i = 0; i < moleculeData->sheets.size(); ++i) {
-		if (atom1->chain == moleculeData->sheets[i].chain &&
-			atom1->residueNum >= moleculeData->sheets[i].residueStart &&
-			atom1->residueNum <= moleculeData->sheets[i].residueEnd) {
-
-			atom1InSheet = true;
-		}
-		if (atom2->chain == moleculeData->sheets[i].chain &&
-			atom2->residueNum >= moleculeData->sheets[i].residueStart &&
-			atom2->residueNum <= moleculeData->sheets[i].residueEnd) {
-
-			atom2InSheet = true;
-		}
-	}
-
-	return Color(1.0f, 1.0f, 1.0f);
-	*/
-
-	Color atom1Color = fromStructure(atom1, moleculeData);
-	Color atom2Color = fromStructure(atom2, moleculeData);
-
-	if (atom1Color == atom2Color) {
-		return atom1Color;
-	}
 	return Color(1.0f, 1.0f, 1.0f);
 }
 

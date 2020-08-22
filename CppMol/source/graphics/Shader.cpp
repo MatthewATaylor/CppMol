@@ -166,7 +166,8 @@ uniform mat3 normalMat;
 uniform mat4 view;
 uniform mat4 projection;
 
-uniform vec3 color;
+uniform vec3 topColor;
+uniform vec3 bottomColor;
 
 void main() {
 	vec4 worldPos = model * vec4(vertexPos, 1.0f);
@@ -174,7 +175,7 @@ void main() {
 
 	fragmentPos = vec3(worldPos);
 	fragmentNormal = normalMat * vertexNormal;
-	fragmentColor = color * posIndicator + vec3(1.0f, 1.0f, 1.0f) * (1.0f - posIndicator);
+	fragmentColor = bottomColor * posIndicator + topColor * (1.0f - posIndicator);
 }
 )";
 	std::string connectorFragmentShader =

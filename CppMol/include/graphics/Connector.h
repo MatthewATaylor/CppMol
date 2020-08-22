@@ -15,7 +15,8 @@
 class Connector {
 private:
 	float radius;
-	Color color;
+	Color topColor;
+	Color bottomColor;
 
 	float length;
 
@@ -29,7 +30,8 @@ public:
 
 	Connector(
 		const Atom *atom1, const Atom *atom2,
-		float radius, const Color *color,
+		float radius,
+		const Color *topColor, const Color *bottomColor,
 		const Vec3 &point1, const Vec3 &point2
 	);
 
@@ -40,5 +42,7 @@ public:
 	);
 
 	void setRadius(float radius);
-	void setColor(const Color *color);
+
+	//Set color of top and bottom halves; ignore if nullptr is passed
+	void setColors(const Color *topColor, const Color *bottomColor);
 };

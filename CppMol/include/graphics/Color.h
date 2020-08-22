@@ -20,15 +20,13 @@ public:
 	float g = 0.0f;
 	float b = 0.0f;
 
+	Color();
 	Color(float r, float g, float b);
 
 	static Color fromByte(unsigned char r, unsigned char g, unsigned char b);
 	static Color fromName(const std::string &name);
 	static Color fromElement(const std::string &element);
 	static Color fromStructure(const Atom *atom, const MoleculeData *moleculeData);
-	static Color fromConnectorStructure(
-		const Atom *atom1, const Atom *atom2, const MoleculeData *moleculeData
-	);
 
 	bool operator==(const Color &color) const;
 };

@@ -67,7 +67,15 @@ void Model::colorAtomsByFunc(
 	for (size_t i = 4; i <= atomSpheres.size() - 3; i += 7) {
 		const Atom *atom = &moleculeData->atoms[(i - 4) / 7];
 		if (selection->isMatch(atom)) {
-			Color color = func(atom);
+			Color color;
+			try {
+				color = func(atom);
+			}
+			catch (const std::invalid_argument &e) {
+				//For invalid element names
+				std::cerr << e.what() << "\n\n";
+				continue;
+			}
 			atomSpheres[i] = color.r;
 			atomSpheres[i + 1] = color.g;
 			atomSpheres[i + 2] = color.b;
@@ -77,7 +85,7 @@ void Model::colorAtomsByFunc(
 }
 
 void Model::colorConnectorsByFunc(
-	std::function<Color(const Connector*)> func,
+	std::function<std::pair<Color, Color>(const Connector*)> func,
 	const Selection *selection,
 	ConnectorType connectorType
 ) {
@@ -101,24 +109,39 @@ void Model::colorConnectorsByFunc(
 	for (size_t i = 0; i < connectors->size(); ++i) {
 		bool atom1IsMatch = selection->isMatch((*connectors)[i]->atom1);
 		bool atom2IsMatch = selection->isMatch((*connectors)[i]->atom2);
-		if (atom1IsMatch && atom2IsMatch) {
-			Color color = func((*connectors)[i]);
-			(*connectors)[i]->setColor(&color);
+		if (atom1IsMatch || atom2IsMatch) {
+			std::pair<Color, Color> colors = func((*connectors)[i]);
+			try {
+				colors = func((*connectors)[i]);
+			}
+			catch (const std::invalid_argument &e) {
+				//For invalid element names
+				std::cerr << e.what() << "\n\n";
+				continue;
+			}
 
-			//Set color of connector spheres
-			size_t sphereIndex1 = i * 2;
-			size_t sphereIndex2 = i * 2 + 1;
+			if (atom1IsMatch) {
+				(*connectors)[i]->setColors(&colors.first, nullptr);
 
-			size_t sphereColorIndex1 = sphereIndex1 * 7 + 4;
-			size_t sphereColorIndex2 = sphereIndex2 * 7 + 4;
+				//Set color of top connector sphere
+				size_t sphereIndex = i * 2;
+				size_t sphereColorIndex = sphereIndex * 7 + 4;
 
-			(*spheres)[sphereColorIndex1] = color.r;
-			(*spheres)[sphereColorIndex1 + 1] = color.g;
-			(*spheres)[sphereColorIndex1 + 2] = color.b;
+				(*spheres)[sphereColorIndex] = colors.first.r;
+				(*spheres)[sphereColorIndex + 1] = colors.first.g;
+				(*spheres)[sphereColorIndex + 2] = colors.first.b;
+			}
+			if (atom2IsMatch) {
+				(*connectors)[i]->setColors(nullptr, &colors.second);
 
-			(*spheres)[sphereColorIndex2] = color.r;
-			(*spheres)[sphereColorIndex2 + 1] = color.g;
-			(*spheres)[sphereColorIndex2 + 2] = color.b;
+				//Set color of top connector sphere
+				size_t sphereIndex = i * 2 + 1;
+				size_t sphereColorIndex = sphereIndex * 7 + 4;
+
+				(*spheres)[sphereColorIndex] = colors.second.r;
+				(*spheres)[sphereColorIndex + 1] = colors.second.g;
+				(*spheres)[sphereColorIndex + 2] = colors.second.b;
+			}
 		}
 	}
 	syncSphereBuffer(false, syncBackboneSpheres, syncDisulfideBondSpheres);
@@ -164,7 +187,7 @@ void Model::loadMoleculeData(const MoleculeData *moleculeData) {
 			}
 		}
 	}
-	float coordScale = 8.0f / maxCoord;
+	float coordScale = 7.5f / maxCoord;
 	Vec3 coordAverages = coordSums * coordScale / (float)moleculeData->atoms.size();
 
 	std::vector<const Atom*> alphaCarbons;
@@ -175,7 +198,15 @@ void Model::loadMoleculeData(const MoleculeData *moleculeData) {
 			alphaCarbons.push_back(&(moleculeData->atoms[i]));
 		}
 
-		Color color = Color::fromElement(moleculeData->atoms[i].element);
+		Color color;
+		try {
+			color = Color::fromElement(moleculeData->atoms[i].element);
+		}
+		catch (const std::invalid_argument &e) {
+			std::cout << e.what() << "\n\n";
+			continue;
+		}
+		
 		addAtom(
 			moleculeData->atoms[i].coords * coordScale - coordAverages,
 			SphereTemplate::DEFAULT_RADIUS,
@@ -198,7 +229,7 @@ void Model::loadMoleculeData(const MoleculeData *moleculeData) {
 				addConnector(
 					alphaCarbons[i], alphaCarbons[i + 1],
 					ConnectorTemplate::DEFAULT_RADIUS,
-					&color, coords1, coords2,
+					&color, &color, coords1, coords2,
 					ConnectorType::BACKBONE
 				);
 			}
@@ -248,7 +279,7 @@ void Model::loadMoleculeData(const MoleculeData *moleculeData) {
 			addConnector(
 				atom1, atom2,
 				0.0f, //Invisible by default
-				&color, coords1, coords2,
+				&color, &color, coords1, coords2,
 				ConnectorType::DISULFIDE_BOND
 			);
 		}
@@ -265,7 +296,7 @@ void Model::addAtom(const Vec3 &center, float radius, const Color *color) {
 void Model::addConnector(
 	const Atom *atom1, const Atom *atom2,
 	float radius,
-	const Color *color,
+	const Color *topColor, const Color *bottomColor,
 	const Vec3 &point1, const Vec3 &point2,
 	ConnectorType connectorType
 ) {
@@ -284,12 +315,14 @@ void Model::addConnector(
 	connectors->push_back(
 		new Connector(
 			atom1, atom2,
-			radius, color,
+			radius,
+			topColor, bottomColor,
 			point1, point2
 		)
 	);
-	addSphere(point1, radius, color, spheres);
-	addSphere(point2, radius, color, spheres);
+
+	addSphere(point1, radius, topColor, spheres);
+	addSphere(point2, radius, bottomColor, spheres);
 }
 
 void Model::genBuffers() {
@@ -521,7 +554,7 @@ void Model::setConnectorRadius(
 
 void Model::setAtomColor(const Color *color, const Selection *selection) {
 	colorAtomsByFunc(
-		[&color](const Atom *atom) -> Color {
+		[&color](const Atom *atom) {
 			return *color;
 		},
 		selection
@@ -529,7 +562,7 @@ void Model::setAtomColor(const Color *color, const Selection *selection) {
 }
 void Model::colorAtomsDefault(const Selection *selection) {
 	colorAtomsByFunc(
-		[](const Atom *atom) -> Color {
+		[](const Atom *atom) {
 			return Color::fromElement(atom->element);
 		},
 		selection
@@ -537,14 +570,11 @@ void Model::colorAtomsDefault(const Selection *selection) {
 }
 void Model::colorAtomsByStructure(const Selection *selection) {
 	colorAtomsByFunc(
-		[&moleculeData = std::as_const(moleculeData)](const Atom *atom) -> Color {
+		[&moleculeData = std::as_const(moleculeData)](const Atom *atom) {
 			return Color::fromStructure(atom, moleculeData);
 		},
 		selection
 	);
-}
-void Model::colorAtomsByChain(const Selection *selection) {
-
 }
 
 void Model::setConnectorColor(
@@ -552,8 +582,8 @@ void Model::setConnectorColor(
 	ConnectorType connectorType
 ) {
 	colorConnectorsByFunc(
-		[&color](const Connector *connector) -> Color {
-			return *color;
+		[&color](const Connector *connector) {
+			return std::make_pair(*color, *color);
 		},
 		selection, connectorType
 	);
@@ -562,12 +592,14 @@ void Model::colorConnectorsDefault(
 	const Selection *selection, ConnectorType connectorType
 ) {
 	colorConnectorsByFunc(
-		[&connectorType](const Connector *connector) -> Color {
+		[&connectorType](const Connector *connector) {
 			if (connectorType == ConnectorType::BACKBONE) {
-				return Color::fromElement("C");
+				Color color = Color::fromElement("C");
+				return std::make_pair(color, color);
 			}
 			else {
-				return Color::fromElement("S");
+				Color color = Color::fromElement("S");
+				return std::make_pair(color, color);
 			}
 		},
 		selection, connectorType
@@ -577,18 +609,13 @@ void Model::colorConnectorsByStructure(
 	const Selection *selection, ConnectorType connectorType
 ) {
 	colorConnectorsByFunc(
-		[&moleculeData = std::as_const(moleculeData)](const Connector *connector) -> Color {
-			return Color::fromConnectorStructure(
-				connector->atom1, connector->atom2, moleculeData
-			);
+		[&moleculeData = std::as_const(moleculeData)](const Connector *connector) {
+			Color color1 = Color::fromStructure(connector->atom1, moleculeData);
+			Color color2 = Color::fromStructure(connector->atom2, moleculeData);
+			return std::make_pair(color1, color2);
 		},
 		selection, connectorType
 	);
-}
-void Model::colorConnectorsByChain(
-	const Selection *selection, ConnectorType connectorType
-) {
-
 }
 
 void Model::rotate(const Vec3 &angleRadians) {

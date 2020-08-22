@@ -9,7 +9,7 @@
 
 class ConnectorTemplate {
 private:
-	static const unsigned int NUM_PANELS = 16;
+	static const unsigned int NUM_PANELS = 14;
 	static const float HEIGHT;
 
 public:

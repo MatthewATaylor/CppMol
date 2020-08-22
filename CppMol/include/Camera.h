@@ -9,10 +9,10 @@
 class Camera {
 private:
 	const Vec3 START_POS;
-	const float START_FOV = 45.0f;
+	const float START_FOV = 60.0f;
 
 	Vec3 position;
-	float fov = 45.0f;
+	float fov = 30.0f;
 
 public:
 	Camera(const Vec3 &initialPosition);

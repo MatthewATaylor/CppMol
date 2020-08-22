@@ -4,6 +4,7 @@
 #include <cctype>
 #include <functional>
 #include <utility>
+#include <stdexcept>
 
 #include <GL/glew.h>
 
@@ -64,7 +65,7 @@ private:
 		const Selection *selection
 	);
 	static void colorConnectorsByFunc(
-		std::function<Color(const Connector*)> func,
+		std::function<std::pair<Color, Color>(const Connector*)> func,
 		const Selection *selection,
 		ConnectorType connectorType
 	);
@@ -86,7 +87,7 @@ public:
 	static void addConnector(
 		const Atom *atom1, const Atom *atom2,
 		float radius,
-		const Color *color,
+		const Color *topColor, const Color *bottomColor,
 		const Vec3 &point1, const Vec3 &point2,
 		ConnectorType connectorType
 	);
@@ -128,7 +129,6 @@ public:
 	static void setAtomColor(const Color *color, const Selection *selection);
 	static void colorAtomsDefault(const Selection *selection);
 	static void colorAtomsByStructure(const Selection *selection);
-	static void colorAtomsByChain(const Selection *selection);
 
 	static void setConnectorColor(
 		const Color *color, const Selection *selection,
@@ -138,9 +138,6 @@ public:
 		const Selection *selection, ConnectorType connectorType
 	);
 	static void colorConnectorsByStructure(
-		const Selection *selection, ConnectorType connectorType
-	);
-	static void colorConnectorsByChain(
 		const Selection *selection, ConnectorType connectorType
 	);
 

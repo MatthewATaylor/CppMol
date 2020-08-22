@@ -7,7 +7,7 @@ void Camera::move(const Vec3 &values) {
 	position += values;
 }
 void Camera::zoom(float value) {
-	fov -= value * 1.4f;
+	fov -= value;
 	if (fov < 0.1f) {
 		fov = 0.1f;
 	}
@@ -32,7 +32,7 @@ Mat4 Camera::getProjectionMatrix(const Window *window) const {
 		MathUtils::toRadians(fov),
 		(float)window->getWidth(),
 		(float)window->getHeight(),
-		0.01f,
-		100.0f
+		2.0f,
+		20.0f
 	);
 }

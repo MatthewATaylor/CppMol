@@ -53,7 +53,7 @@ void displayGraphics() {
 
 
 	MoleculeData *moleculeData = nullptr;
-	Camera camera(Vec3(0.0f, 0.0f, 10.0f));
+	Camera camera(Vec3(0.0f, 0.0f, 15.0f));
 	Selection selection;
 
 	double prevMouseX = 0.0;
@@ -292,7 +292,9 @@ void displayGraphics() {
 				}
 			}
 			else if (commandWords.size() >= 2 && commandWords[0] == "color") {
+				bool colorCommandIsValid = true;
 				if (commandWords[1] == "atom") {
+					//RGB values provided
 					if (commandWords.size() == 5) {
 						int r, g, b;
 						std::string rStr = commandWords[2];
@@ -315,6 +317,7 @@ void displayGraphics() {
 						catch (...) {
 							std::cerr << "ERROR > Invalid color argument: " <<
 								"color values must be numbers between 0 and 255\n\n";
+							colorCommandIsValid = false;
 						}
 					}
 					else if (commandWords.size() == 3) {
@@ -324,9 +327,6 @@ void displayGraphics() {
 						else if (commandWords[2] == "structure") {
 							Model::colorAtomsByStructure(&selection);
 						}
-						else if (commandWords[2] == "chain") {
-							Model::colorAtomsByChain(&selection);
-						}
 						else {
 							try {
 								Color color = Color::fromName(commandWords[2]);
@@ -334,8 +334,12 @@ void displayGraphics() {
 							}
 							catch (...) {
 								std::cerr << "ERROR > Invalid color argument\n\n";
+								colorCommandIsValid = false;
 							}
 						}
+					}
+					else {
+						colorCommandIsValid = false;
 					}
 				}
 				else if (commandWords[1] == "backbone" || commandWords[1] == "ssbond") {
@@ -365,6 +369,7 @@ void displayGraphics() {
 						catch (...) {
 							std::cerr << "ERROR > Invalid color argument: " <<
 								"color values must be numbers between 0 and 255\n\n";
+							colorCommandIsValid = false;
 						}
 					}
 					else if (commandWords.size() == 3) {
@@ -374,9 +379,6 @@ void displayGraphics() {
 						else if (commandWords[2] == "structure") {
 							Model::colorConnectorsByStructure(&selection, connectorType);
 						}
-						else if (commandWords[2] == "chain") {
-							Model::colorConnectorsByChain(&selection, connectorType);
-						}
 						else {
 							try {
 								Color color = Color::fromName(commandWords[2]);
@@ -384,11 +386,20 @@ void displayGraphics() {
 							}
 							catch (...) {
 								std::cerr << "ERROR > Invalid color argument\n\n";
+								colorCommandIsValid = false;
 							}
 						}
 					}
+					else {
+						colorCommandIsValid = false;
+					}
 				}
-				//TODO: add invalid command message for bad color command
+				else {
+					colorCommandIsValid = false;
+				}
+				if (!colorCommandIsValid) {
+					std::cerr << "ERROR > Invalid command\n\n";
+				}
 			}
 			else {
 				std::cerr << "ERROR > Invalid command\n\n";

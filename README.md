@@ -2,7 +2,14 @@
 CppMol is a visualization tool for macromolecules found in the [Protein Data Bank](http://www.rcsb.org/). It's written in C++ with OpenGL, allowing it to achieve high performance when rendering complex molecules.
 
 ## Demo
-Watch CppMol render the SARS-CoV-2 spike glycoprotein [here](https://youtu.be/duECJbRdzNk).
+Watch CppMol render the SARS-CoV-2 spike glycoprotein ([6VXX](http://www.rcsb.org/structure/6VXX)) [here](https://youtu.be/duECJbRdzNk).
+
+**Protein [7BWJ](http://www.rcsb.org/structure/7BWJ) (SARS-CoV-2 antibody with RBD):**
+<div style="text-align: center;">
+    <img src="7BWJ_1.png" alt="7BWJ Carbon Backbone and Atoms" width="200"/>
+    <img src="7BWJ_2.png" alt="7BWJ Carbon Backbone" width="200"/>
+    <img src="7BWJ_3.png" alt="7BWJ Carbon Backbone (Colored by Secondary Structure)" width="200"/>
+</div>
 
 ## Commands
 ### Load a PDB file from a URL

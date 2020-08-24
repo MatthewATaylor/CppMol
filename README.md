@@ -80,3 +80,8 @@ Color the molecule's selected components based on the secondary protein structur
 Use `unload` to remove the currently-loaded molecule from the window.
 
 Use `reset` to undo all graphical changes made to the model.
+
+## Window Controls
+* **Left click and drag:** Rotate about X and Y axes
+* **Right click and drag:** Rotate about Z axis
+* **Ctrl + Left click and drag**: Pan

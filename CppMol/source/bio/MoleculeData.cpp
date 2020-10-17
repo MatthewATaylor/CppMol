@@ -6,8 +6,8 @@ void MoleculeData::printSequence() {
 	}
 	else {
 		for (size_t i = 0; i < sequence.size(); ++i) {
-			std::cout << i + 1 << ") " << sequence[i].name << "    r=" <<
-				sequence[i].residueNum << "    c=" << sequence[i].chain << "\n";
+			std::cout << i + 1 << ") " << sequence[i].name << "\tr=" <<
+				sequence[i].residueNum << "\tc=" << sequence[i].chain << "\n";
 		}
 		std::cout << "\n";
 	}
@@ -19,9 +19,9 @@ void MoleculeData::printHelices() {
 	}
 	else {
 		for (size_t i = 0; i < helices.size(); ++i) {
-			std::cout << i + 1 << ") " << helices[i].getName() << "    r=" <<
+			std::cout << i + 1 << ") " << helices[i].getName() << "\tr=" <<
 				helices[i].residueStart << ":" << helices[i].residueEnd <<
-				"    c=" << helices[i].chain << "\n";
+				"\tc=" << helices[i].chain << "\n";
 		}
 		std::cout << "\n";
 	}
@@ -34,7 +34,7 @@ void MoleculeData::printSheets() {
 	else {
 		for (size_t i = 0; i < sheets.size(); ++i) {
 			std::cout << i + 1 << ") " << "r=" << sheets[i].residueStart << ":" <<
-				sheets[i].residueEnd << "    c=" << sheets[i].chain << "\n";
+				sheets[i].residueEnd << "\tc=" << sheets[i].chain << "\n";
 		}
 		std::cout << "\n";
 	}
@@ -60,9 +60,9 @@ void MoleculeData::printAtoms() {
 	}
 	else {
 		for (size_t i = 0; i < atoms.size(); ++i) {
-			std::cout << i + 1 << ") " << atoms[i].name << "    r=" <<
+			std::cout << i + 1 << ") " << atoms[i].name << "\tr=" <<
 				atoms[i].residueNum << " (" << atoms[i].residueName <<
-				")    e=" << atoms[i].element << "    c=" << atoms[i].chain << "\n";
+				")\te=" << atoms[i].element << "\tc=" << atoms[i].chain << "\n";
 		}
 		std::cout << "\n";
 	}

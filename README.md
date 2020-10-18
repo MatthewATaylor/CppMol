@@ -2,9 +2,9 @@
 CppMol is a visualization tool for macromolecules found in the [Protein Data Bank](http://www.rcsb.org/). It's written in C++ with OpenGL, allowing it to achieve high performance when rendering complex molecules.
 
 ## Dependencies
-* **GLFW**: For handling windows and user inputs
-* **libcurl**: For fetching online PDB files
-* **GLEW**
+* [libcurl](https://curl.haxx.se/libcurl/): For fetching online PDB files
+* [GLFW](https://github.com/glfw/glfw): For handling windows and user inputs
+* [GLEW](https://github.com/nigels-com/glew)
 
 ## Demo
 Watch CppMol render the SARS-CoV-2 spike glycoprotein ([6VXX](http://www.rcsb.org/structure/6VXX)) [here](https://youtu.be/duECJbRdzNk).
